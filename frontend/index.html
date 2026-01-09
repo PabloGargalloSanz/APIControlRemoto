@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RemoteOps - Control y Auditoría</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="overlay">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="icon-circle">🔒</div>
+                <h1>RemoteOps</h1>
+                <p>Control de Servidor Seguro</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="username" placeholder="admin" required>
+                </div>
+                <div class="form-group">
+                    <label>Token de Acceso</label>
+                    <input type="password" id="token" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary">Entrar</button>
+            </form>
+
+            <div class="login-footer">
+                <button onclick="loginBypass()" class="btn-bypass-login">
+                    ⚠️ Acceso de Emergencia (Bypass Login)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL -->
+    <div id="main-app" class="app-container hidden">
+        
+        <!-- BARRA LATERAL -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">💻</span>
+                <span class="logo-text">RemoteOps</span>
+            </div>
+            
+            <nav class="menu">
+                <button onclick="switchPage('dashboard')" class="menu-item active" id="btn-dashboard">Dashboard</button>
+                <button onclick="switchPage('terminal')" class="menu-item" id="btn-terminal">Terminal Shell</button>
+                <button onclick="switchPage('audit')" class="menu-item" id="btn-audit">Auditoría</button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="bypass-control">
+                    <label>Bypass Operacional</label>
+                    <input type="checkbox" id="bypass-toggle" onchange="toggleBypass(this.checked)">
+                </div>
+                <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="content">
+            <div id="bypass-alert" class="alert-bar hidden">
+                MODO BYPASS ACTIVO: SEGURIDAD DESHABILITADA
+            </div>
+
+            <header class="content-header">
+                <h2 id="page-title">Dashboard</h2>
+                <div class="header-actions">
+                    <button class="btn-action" onclick="quickAction('Reinicio')">Reiniciar</button>
+                    <button class="btn-danger" onclick="quickAction('Apagado')">Apagar</button>
+                </div>
+            </header>
+
+            <div class="scroll-area">
+                <!-- Dashboard Page -->
+                <section id="page-dashboard" class="page">
+                    <div class="stats-grid">
+                        <div class="card">
+                            <label>Uso de CPU</label>
+                            <div class="stat-value" id="cpu-text">0%</div>
+                            <div class="progress-bg"><div id="cpu-bar" class="progress-fill" style="width: 0%"></div></div>
+                        </div>
+                        <div class="card">
+                            <label>Memoria RAM</label>
+                            <div class="stat-value" id="ram-text">0%</div>
+                            <div class="progress-bg"><div id="ram-bar" class="progress-fill purple" style="width: 0%"></div></div>
+                        </div>
+                        <div class="card">
+                            <label>Disco Duro</label>
+                            <div class="stat-value">68%</div>
+                            <div class="progress-bg"><div class="progress-fill orange" style="width: 68%"></div></div>
+                        </div>
+                        <div class="card">
+                            <label>Estado Red</label>
+                            <div class="stat-value">Activo</div>
+                            <p class="stat-subtext">Latencia: 12ms</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Terminal Page -->
+                <section id="page-terminal" class="page hidden">
+                    <div class="terminal">
+                        <div class="terminal-header">bash — root@remote-server</div>
+                        <div id="terminal-output" class="terminal-body">
+                            <p class="text-dim">Escriba 'help' para ver los comandos...</p>
+                        </div>
+                        <div class="terminal-input-row">
+                            <span class="prompt">➜</span>
+                            <input type="text" id="terminal-input" placeholder="comando..." autofocus>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Audit Page -->
+                <section id="page-audit" class="page hidden">
+                    <div class="card no-padding">
+                        <table class="audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Acción</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-logs">
+                                <!-- Logs dinámicos aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
