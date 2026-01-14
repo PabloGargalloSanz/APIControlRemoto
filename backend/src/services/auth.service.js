@@ -25,3 +25,22 @@ export const createUser = async (email, password) => {
 }
 
 //Autentificar usuario
+export const authenticateUser = async (email, password) => {
+    const result = await pool.query(
+        'SELECT id, email, password FROM usuarios WHERE email = $1',
+        [email]
+    ); 
+    const user = result.rows[0];
+
+    //user null o undefined
+    if (!user) {
+        return null;
+    }   
+
+    const isPasswordValid = await argon2.verify(user.password, password + PEPPER);
+
+    if (!isPasswordValid) {
+        return null;
+    }   
+    return { id: user.id, email: user.email };
+}   
