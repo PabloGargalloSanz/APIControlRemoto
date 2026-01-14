@@ -1,0 +1,9 @@
+CREATE DATABASE control_remoto;
+
+\c control_remoto
+
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
