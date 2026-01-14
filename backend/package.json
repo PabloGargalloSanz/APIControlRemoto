@@ -2,8 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "app.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon --env-file=.env app.js"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,8 @@
     "node": "^24.12.0",
     "pg": "^8.16.3"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
 }

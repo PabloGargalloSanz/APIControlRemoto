@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from './src/db/db.js';
+import ENV from './src/utils/envLoader.js';
 
 const app= express();
 
@@ -18,6 +19,6 @@ pool.connect()
         console.log('❌ Error al conectarse a la base de datos ', error);
 })
 
-app.listen(env.PORT, () => {
+app.listen(ENV.PORT, () => {
     console.log('Servidor escuchando en el puerto ' + process.env.PORT);
 })
