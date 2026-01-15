@@ -1,4 +1,4 @@
-import {createUser, authenticateUser} from '../services/auth.service.js';
+import {createUser, authenticateUser, generateToken} from '../services/auth.service.js';
 
 //nuevo usuario
 export const register = async (req, res) => {
@@ -27,7 +27,7 @@ export const loggin = async (req, res, next) => {
         const user = await authenticateUser(email, password);
 
         if (user) {
-            const token = authService.generateToken(user);
+            const token = generateToken(user);
 
             res.status(200).json({
                 message: "Login exitoso",

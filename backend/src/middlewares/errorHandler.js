@@ -7,7 +7,7 @@ export const globalErrorHandler = async (err, req, res, next) => {
 
     await logError(userId, action, ip, err.message);
     
-    console.error(`[${action}] - IP: ${ip} - Error: ${err.message}`);
+    console.error(`[${action}] - Error: ${err.message}`);
 
     res.status(err.status || 500).json({
         error: err.message || "Error interno del servidor"
