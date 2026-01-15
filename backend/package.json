@@ -4,7 +4,8 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --env-file=.env app.js"
+    "dev": "nodemon --env-file=.env app.js",
+    "metricas": "node src/workers/metrics.worker.js"
   },
   "keywords": [],
   "author": "",

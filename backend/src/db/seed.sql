@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS metricas_sistema (
     cpu_uso DECIMAL(5, 2) NOT NULL,   
     ram_uso DECIMAL(5, 2) NOT NULL,   
     disco_uso DECIMAL(5, 2) NOT NULL,  
-    net_in BIGINT DEFAULT 0,            -- Datos recibidos (Bytes)
-    net_out BIGINT DEFAULT 0,            -- Datos transmitidos (Bytes)
+    net_in DECIMAL(10, 2) DEFAULT 0,            -- Datos recibidos (Bytes)
+    net_out DECIMAL(10, 2) DEFAULT 0,            -- Datos transmitidos (Bytes)
     creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
