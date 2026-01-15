@@ -12,7 +12,9 @@ CREATE TABLE logs (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id),
     accion VARCHAR(255) NOT NULL,
-    ip_origen VARCHAR(45),
+    ip_origen VARCHAR(45) NOT NULL,
     comando_ejecutado TEXT,
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    detalles TEXT,
+    fecha DATE DEFAULT CURRENT_DATE,
+    hora TIME DEFAULT LOCALTIME(0)
 );

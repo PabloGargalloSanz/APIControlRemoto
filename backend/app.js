@@ -2,9 +2,11 @@ import express from 'express';
 import pool from './src/db/db.js';
 import ENV from './src/utils/envLoader.js';
 import mainRouter from './src/routers/mainRouter.js';
+import { globalErrorHandler } from './src/middlewares/errorHandler.js';
 
 const app= express();
 
+app.set('trust proxy', true); //gestion ip
 app.use(express.json());
 app.use('/api', mainRouter);
 
@@ -21,6 +23,10 @@ pool.connect()
         console.log('❌ Error al conectarse a la base de datos ', error);
 })
 
+//manejador de errores
+app.use(globalErrorHandler);
+
 app.listen(ENV.PORT, () => {
     console.log('Servidor escuchando en el puerto ' + process.env.PORT);
 })
+

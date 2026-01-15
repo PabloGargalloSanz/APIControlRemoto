@@ -12,14 +12,15 @@ export const register = async (req, res) => {
         console.error('Error registering user:', error);
 
         if (error.code === '23505') {
-            return res.status(409).json({ error: "El email ya está registrado" });
+            return res.status(409);
         }
-        res.status(400).json({ error: error.message });
+        error.action = 'REGISTER_FAIL';
+        next(error);
     }   
 };
 
 //autentificar usuario
-export const loggin = async (req, res) => {
+export const loggin = async (req, res, next) => {
     const { email, password } = req.body;
 
     try {
@@ -38,12 +39,15 @@ export const loggin = async (req, res) => {
         });
 
         } else {
-            res.status(401).json({ error: 'Invalid credentials' });
+            const err = new Error('Invalid credentials');
+            err.status = 401;
+            err.action = 'AUTH_LOGGIN_FAIL';
+            return next(err);
         }
 
     } catch (error) {
-        console.error('Error logging in user:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        error.action = 'AUTH_LOGGIN_FAIL';
+        next(error);
     }
 
 };
