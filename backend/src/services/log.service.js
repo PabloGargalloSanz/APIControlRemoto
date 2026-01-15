@@ -18,9 +18,12 @@ const newLog = async (userId, action, ip, method, rute, command, details) =>{
     }
 }
 
+// columnas db
+//usuario_id, accion, ip_origen, metodo, ruta, comando_ejecutado, detalles
+
 //Servicio log generico
 export const logAuth = (userId, action, ip, method = null, rute = null, details) => {
-    newLog(userId, action, ip, method, rute, null, details);
+    newLog(userId, action, ip, method, rute, null, 'OK: ' + details);
 }
 
 //Servicio log shell
@@ -29,6 +32,6 @@ export const logShell = (userId, ip, command, details) => {
 }
 
 //Servicio log error
-export const logError = (userId, action, ip, method = null, rute = null, details) => {
-    newLog(userId, action, ip, method, rute, null, details);
+export const logError = (userId, action, ip, method, rute, details) => {
+    newLog(userId, action, ip, method, rute, null, 'ERROR: ' + details);
 }

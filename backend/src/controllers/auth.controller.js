@@ -38,11 +38,14 @@ export const loggin = async (req, res, next) => {
                     id: user.id,
                     email: user.email
                 }
-        });
+            });
+
+        // guardo id en req para uso posterior
+        req.userId = user.id;
         req.action = 'LOGIN_SUCCES';
 
         } else {
-            const err = new Error('Invalid credentials');
+            const err = new Error('Credenciales erroneas');
             err.status = 401;
             err.action = 'AUTH_LOGGIN_FAIL';
             return next(err);
