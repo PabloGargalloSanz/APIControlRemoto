@@ -1,9 +1,7 @@
 import argon2 from 'argon2';
 import pool from '../db/db.js';
-import jwt from 'jsonwebtoken';
 
 const PEPPER = process.env.AUTH_PEPPER;
-const JWT = process.env.JWT_SECRET;
 
 //Configuracion has
 const HASH_CONFIG = {
@@ -46,14 +44,3 @@ export const authenticateUser = async (email, password) => {
     return { id: user.id, email: user.email };
 }   
 
-//generar token
-export const generateToken = (user) => {
-    const payload = {
-        id: user.id,
-        email: user.email
-    };
-
-    return jwt.sign(payload, JWT, {
-        expiresIn: '15m'
-    })
-}

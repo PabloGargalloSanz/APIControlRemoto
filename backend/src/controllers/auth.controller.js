@@ -1,4 +1,5 @@
-import {createUser, authenticateUser, generateToken} from '../services/auth.service.js';
+import {createUser, authenticateUser} from '../services/auth.service.js';
+import {generateToken} from '../utils/token.util.js';
 
 //nuevo usuario
 export const register = async (req, res, next) => {
