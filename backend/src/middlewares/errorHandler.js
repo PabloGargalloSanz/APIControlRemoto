@@ -5,7 +5,7 @@ export const globalErrorHandler = async (err, req, res, next) => {
     const userId = req.user ? req.user.id : null; // con token tenemos id
     const action = err.action || 'SYSTEM_ERROR'; 
 
-    await logError(userId, action, ip, err.message);
+    await logError(userId, action, ip, null, null, err.message);
     
     console.error(`[${action}] - Error: ${err.message}`);
 

@@ -3,11 +3,13 @@ import pool from './src/db/db.js';
 import ENV from './src/utils/envLoader.js';
 import mainRouter from './src/routers/mainRouter.js';
 import { globalErrorHandler } from './src/middlewares/errorHandler.js';
+import { activityLogger } from './src/middlewares/activityLogger.js';
 
 const app= express();
 
 app.set('trust proxy', true); //gestion ip
 app.use(express.json());
+app.use(activityLogger);
 app.use('/api', mainRouter);
 
 app.get('/', (req,res) => {

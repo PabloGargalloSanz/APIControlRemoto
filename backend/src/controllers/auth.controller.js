@@ -1,18 +1,20 @@
 import {createUser, authenticateUser, generateToken} from '../services/auth.service.js';
 
 //nuevo usuario
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
     const { email, password } = req.body;   
 
     try {
         const newUser =  await createUser (email, password);
+        req.action = 'REGISTER_SUCCESS';
         res.status(201).json(newUser);
 
     } catch (error) {
         console.error('Error registering user:', error);
 
         if (error.code === '23505') {
-            return res.status(409);
+            res.status(409);
+            error.message = "El email ya está registrado";
         }
         error.action = 'REGISTER_FAIL';
         next(error);
@@ -37,6 +39,7 @@ export const loggin = async (req, res, next) => {
                     email: user.email
                 }
         });
+        req.action = 'LOGIN_SUCCES';
 
         } else {
             const err = new Error('Invalid credentials');

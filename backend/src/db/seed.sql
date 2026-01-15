@@ -13,6 +13,8 @@ CREATE TABLE logs (
     usuario_id INTEGER REFERENCES usuarios(id),
     accion VARCHAR(255) NOT NULL,
     ip_origen VARCHAR(45) NOT NULL,
+    metodo VARCHAR (20),
+    ruta TEXT,
     comando_ejecutado TEXT,
     detalles TEXT,
     fecha DATE DEFAULT CURRENT_DATE,
