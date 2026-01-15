@@ -27,7 +27,7 @@ export const loggin = async (req, res) => {
 
         if (user) {
             res.status(200).json(user);
-            console.log("correcto");
+            
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
         }

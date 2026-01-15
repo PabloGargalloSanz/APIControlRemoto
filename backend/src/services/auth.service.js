@@ -7,8 +7,7 @@ const PEPPER = process.env.AUTH_PEPPER;
 const HASH_CONFIG = {
     type: argon2.argon2id,
     memoryCost: 2 ** 16, //64mb
-    timeCost: 3,
-    //timeCost: 10, probar con mas de 3
+    timeCost: 10,
     parallelism:4
 };
 
