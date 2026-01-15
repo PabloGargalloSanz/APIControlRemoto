@@ -26,8 +26,17 @@ export const loggin = async (req, res) => {
         const user = await authenticateUser(email, password);
 
         if (user) {
-            res.status(200).json(user);
-            
+            const token = authService.generateToken(user);
+
+            res.status(200).json({
+                message: "Login exitoso",
+                token: token,
+                user: {
+                    id: user.id,
+                    email: user.email
+                }
+        });
+
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
         }
