@@ -19,7 +19,7 @@ export const register = async (req, res) => {
 };
 
 //autentificar usuario
-export const login = async (req, res) => {
+export const loggin = async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -27,6 +27,7 @@ export const login = async (req, res) => {
 
         if (user) {
             res.status(200).json(user);
+            console.log("correcto");
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
         }
