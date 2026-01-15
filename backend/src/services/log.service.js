@@ -22,7 +22,7 @@ const newLog = async (userId, action, ip, method, rute, command, details) =>{
 //usuario_id, accion, ip_origen, metodo, ruta, comando_ejecutado, detalles
 
 //Servicio log generico
-export const logAuth = (userId, action, ip, method = null, rute = null, details) => {
+export const logAll = (userId, action, ip, method = null, rute = null, details) => {
     newLog(userId, action, ip, method, rute, null, 'OK: ' + details);
 }
 

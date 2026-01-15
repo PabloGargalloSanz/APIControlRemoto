@@ -48,12 +48,12 @@ export const loggin = async (req, res, next) => {
         } else {
             const err = new Error('Credenciales erroneas');
             err.status = 401;
-            err.action = 'AUTH_LOGGIN_FAIL';
+            err.action = 'AUTH_LOGIN_FAIL';
             return next(err);
         }
 
     } catch (error) {
-        error.action = 'AUTH_LOGGIN_FAIL';
+        error.action = 'AUTH_LOGIN_FAIL';
         next(error);
     }
 

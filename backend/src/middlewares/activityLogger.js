@@ -1,4 +1,4 @@
-import { logAuth } from '../services/log.service.js';
+import { logAll } from '../services/log.service.js';
 
 export const activityLogger = (req, res, next) => {
     res.on('finish', () => {
@@ -10,7 +10,7 @@ export const activityLogger = (req, res, next) => {
             const action = req.action;
             const details = 'Acción realizada con exito';
 
-            logAuth(userId, action, ip, method, rute, details);
+            logAll(userId, action, ip, method, rute, details);
         }
     });
     next();
