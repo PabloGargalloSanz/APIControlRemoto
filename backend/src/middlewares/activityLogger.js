@@ -9,9 +9,10 @@ export const activityLogger = (req, res, next) => {
             const method = req.method;
             const action = req.action;
             const details = 'Acción realizada con exito';
+            const statusCode = res.statusCode;
 
-            logAll(userId, action, ip, method, rute, details);
-        }
+            logAll(userId, action, ip, method, rute, details, statusCode);
+        } 
     });
     next();
 };

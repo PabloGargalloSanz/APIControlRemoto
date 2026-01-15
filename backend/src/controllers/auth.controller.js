@@ -14,7 +14,7 @@ export const register = async (req, res, next) => {
         console.error('Error registering user:', error);
 
         if (error.code === '23505') {
-            res.status(409);
+            error.status = 409;
             error.message = "El email ya está registrado";
         }
         error.action = 'REGISTER_FAIL';
@@ -32,6 +32,10 @@ export const loggin = async (req, res, next) => {
         if (user) {
             const token = generateToken(user);
 
+            // guardo id en req para uso posterior
+            req.userId = user.id;
+            req.action = 'LOGIN_SUCCES';
+
             res.status(200).json({
                 message: "Login exitoso",
                 token: token,
@@ -41,19 +45,16 @@ export const loggin = async (req, res, next) => {
                 }
             });
 
-        // guardo id en req para uso posterior
-        req.userId = user.id;
-        req.action = 'LOGIN_SUCCES';
-
         } else {
             const err = new Error('Credenciales erroneas');
-            err.status = 401;
             err.action = 'AUTH_LOGIN_FAIL';
+            err.status = 401;
             return next(err);
         }
-
+        
     } catch (error) {
-        error.action = 'AUTH_LOGIN_FAIL';
+        error.status = 500;
+        error.action = 'AUTH_LOGIN_BIG_FAIL';
         next(error);
     }
 

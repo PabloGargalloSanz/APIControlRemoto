@@ -1,13 +1,13 @@
 import pool from '../db/db.js';
 
 //Insercion de log en db
-const newLog = async (userId, action, ip, method, rute, command, details) =>{
+const newLog = async (userId, action, ip, method, rute, command, details, statusCode) =>{
     const safeIp = ip || '0.0.0.0'; //evitar posibles problemas insercion DB
 
     try{
         const result = await pool.query(
-            'INSERT INTO logs (usuario_id, accion, ip_origen, metodo, ruta, comando_ejecutado, detalles) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-            [userId, action, safeIp, method, rute, command, details]
+            'INSERT INTO logs (usuario_id, accion, ip_origen, metodo, ruta, comando_ejecutado, detalles, status_codigo) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+            [userId, action, safeIp, method, rute, command, details, statusCode]
         );
         return result.rows[0];
     
@@ -19,19 +19,19 @@ const newLog = async (userId, action, ip, method, rute, command, details) =>{
 }
 
 // columnas db
-//usuario_id, accion, ip_origen, metodo, ruta, comando_ejecutado, detalles
+//usuario_id, accion, ip_origen, metodo, ruta, comando_ejecutado, detalles, status_codigo
 
 //Servicio log generico
-export const logAll = (userId, action, ip, method = null, rute = null, details) => {
-    newLog(userId, action, ip, method, rute, null, 'OK: ' + details);
+export const logAll = (userId, action, ip, method = null, rute = null, details, statusCode) => {
+    newLog(userId, action, ip, method, rute, null, 'OK: ' + details, statusCode);
 }
 
 //Servicio log shell
-export const logShell = (userId, ip, command, details) => {
-    newLog(userId, 'SHELL', ip, null, null, command, details);
+export const logShell = (userId, ip, command, details, statusCode) => {
+    newLog(userId, 'SHELL', ip, 'EXEC', null, command, details, statusCode);
 }
 
 //Servicio log error
-export const logError = (userId, action, ip, method, rute, details) => {
-    newLog(userId, action, ip, method, rute, null, 'ERROR: ' + details);
+export const logError = (userId, action, ip, method, rute, details, statusCode) => {
+    newLog(userId, action, ip, method, rute, null, 'ERROR: ' + details, statusCode);
 }
