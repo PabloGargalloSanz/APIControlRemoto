@@ -28,6 +28,10 @@ CREATE TABLE IF NOT EXISTS logs (
 CREATE TABLE IF NOT EXISTS metricas_sistema (
     id SERIAL PRIMARY KEY,
     cpu_uso DECIMAL(5, 2) NOT NULL,   
+    cpu_temp DECIMAL(5, 2) NOT NULL,   
+    gpu_uso DECIMAL(5, 2) NOT NULL,   
+    gpu_memUso DECIMAL(5, 2) NOT NULL,   
+    gpu_temp DECIMAL(5, 2) NOT NULL,   
     ram_uso DECIMAL(5, 2) NOT NULL,   
     disco_uso DECIMAL(5, 2) NOT NULL,  
     net_in DECIMAL(10, 2) DEFAULT 0,            -- Datos recibidos (Bytes)
