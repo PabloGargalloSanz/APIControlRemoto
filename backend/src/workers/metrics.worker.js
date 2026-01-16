@@ -49,7 +49,7 @@ const getSystemMetrics = async () => {
 const uploadData = async (data) => {
     try {
         const result = await pool.query(
-            'INSERT INTO metricas_sistema (cpu_uso, cpu_temp, gpu_uso, "gpu_memUso", gpu_temp, ram_uso, disco_uso, net_in, net_out) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', 
+            'INSERT INTO metricas_sistema (cpu_uso, cpu_temp, gpu_uso, "gpu_mem_uso", gpu_temp, ram_uso, disco_uso, net_in, net_out) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', 
             [data.cpuUso, data.cpuTemp, data.gpuUso, data.gpuMemUso, data.gpuTemp, data.ramUso, data.discoUso, data.netIn, data.netOut]
         );
 

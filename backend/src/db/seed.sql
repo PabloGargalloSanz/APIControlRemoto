@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS metricas_sistema (
     cpu_uso DECIMAL(5, 2) NOT NULL,   
     cpu_temp DECIMAL(5, 2) NOT NULL,   
     gpu_uso DECIMAL(5, 2) NOT NULL,   
-    gpu_memUso DECIMAL(5, 2) NOT NULL,   
+    gpu_mem_uso DECIMAL(5, 2) NOT NULL,   
     gpu_temp DECIMAL(5, 2) NOT NULL,   
     ram_uso DECIMAL(5, 2) NOT NULL,   
     disco_uso DECIMAL(5, 2) NOT NULL,  
