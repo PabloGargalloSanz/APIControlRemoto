@@ -16,7 +16,7 @@ export const createUser = async (email, password) => {
     const createHash = await argon2.hash(password + PEPPER, HASH_CONFIG);
 
     const result = await pool.query(
-        'INSERT INTO usuarios (email, PASSWORD) VALUES ($1, $2) RETURNING id, email',
+        'INSERT INTO usuarios (email, password) VALUES ($1, $2) RETURNING id, email',
         [email, createHash]
     );
 

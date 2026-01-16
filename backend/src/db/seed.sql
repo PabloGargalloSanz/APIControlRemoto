@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'viewer', -- 'admin' comandos shell, 'viewer' solo lectura
-    creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_creado DATE DEFAULT CURRENT_DATE,
+    hora_creado TIME DEFAULT LOCALTIME(0)
 );
 
 CREATE TABLE IF NOT EXISTS logs (
@@ -31,5 +32,6 @@ CREATE TABLE IF NOT EXISTS metricas_sistema (
     disco_uso DECIMAL(5, 2) NOT NULL,  
     net_in DECIMAL(10, 2) DEFAULT 0,            -- Datos recibidos (Bytes)
     net_out DECIMAL(10, 2) DEFAULT 0,            -- Datos transmitidos (Bytes)
-    creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_creado DATE DEFAULT CURRENT_DATE,
+    hora_creado TIME DEFAULT LOCALTIME(0)
 );
