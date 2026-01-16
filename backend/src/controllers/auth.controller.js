@@ -3,10 +3,15 @@ import {generateToken} from '../utils/token.util.js';
 
 //nuevo usuario
 export const register = async (req, res, next) => {
-    const { email, password } = req.body;   
+    const { email, password, role } = req.body;   
+    
+    /////////////////////////////////////////////////////
+    //Quitar antes de finalizar
+    /////////////////////////////////////////////////////
+    const rolType = role ? role : 'viewer';
 
     try {
-        const newUser =  await createUser (email, password);
+        const newUser =  await createUser (email, password, rolType);
         req.action = 'REGISTER_SUCCESS';
         res.status(201).json(newUser);
 

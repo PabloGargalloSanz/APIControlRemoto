@@ -12,12 +12,12 @@ const HASH_CONFIG = {
 };
 
 //Crear nuevo usuario
-export const createUser = async (email, password) => {
+export const createUser = async (email, password, rolType) => {
     const createHash = await argon2.hash(password + PEPPER, HASH_CONFIG);
 
     const result = await pool.query(
-        'INSERT INTO usuarios (email, password) VALUES ($1, $2) RETURNING id, email',
-        [email, createHash]
+        'INSERT INTO usuarios (email, password, role) VALUES ($1, $2, $3) RETURNING id, email, role',
+        [email, createHash, rolType]
     );
 
     return result.rows[0];
