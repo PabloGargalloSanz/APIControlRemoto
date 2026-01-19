@@ -29,11 +29,17 @@ CREATE TABLE IF NOT EXISTS metricas_sistema (
     id SERIAL PRIMARY KEY,
     cpu_uso DECIMAL(5, 2) NOT NULL,   
     cpu_temp DECIMAL(5, 2) NOT NULL,   
+    cpu_freq DECIMAL(5, 2) NOT NULL,   
+    cpu_carga DECIMAL(5, 2) NOT NULL,   
     gpu_uso DECIMAL(5, 2) NOT NULL,   
     gpu_mem_uso DECIMAL(5, 2) NOT NULL,   
     gpu_temp DECIMAL(5, 2) NOT NULL,   
     ram_uso DECIMAL(5, 2) NOT NULL,   
+    ram_disponible DECIMAL(7, 2) NOT NULL,   
+    swap_uso DECIMAL(5, 2) NOT NULL,   
     disco_uso DECIMAL(5, 2) NOT NULL,  
+    disco_read DECIMAL(5, 2) NOT NULL,  
+    disco_write DECIMAL(5, 2) NOT NULL,  
     net_in DECIMAL(10, 2) DEFAULT 0,            -- Datos recibidos (Bytes)
     net_out DECIMAL(10, 2) DEFAULT 0,            -- Datos transmitidos (Bytes)
     fecha_creado DATE DEFAULT CURRENT_DATE,
