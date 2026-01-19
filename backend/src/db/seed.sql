@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'viewer', -- 'admin' comandos shell, 'viewer' solo lectura
-    fecha_creado DATE DEFAULT CURRENT_DATE,
-    hora_creado TIME DEFAULT LOCALTIME(0)
+    fecha_creado TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS logs (
@@ -21,8 +20,7 @@ CREATE TABLE IF NOT EXISTS logs (
     comando_ejecutado TEXT,
     detalles TEXT,
     status_codigo INTEGER,               
-    fecha DATE DEFAULT CURRENT_DATE,
-    hora TIME DEFAULT LOCALTIME(0)
+    fecha_creado TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS metricas_sistema (
@@ -35,16 +33,15 @@ CREATE TABLE IF NOT EXISTS metricas_sistema (
     gpu_uso DECIMAL(5, 2) NOT NULL,   
     gpu_mem_uso DECIMAL(5, 2) NOT NULL,   
     gpu_temp DECIMAL(5, 2) NOT NULL,   
-    ram_uso DECIMAL(5, 2) NOT NULL,   
+    ram_uso DECIMAL(7, 2) NOT NULL,   
     ram_disponible DECIMAL(7, 2) NOT NULL,   
-    swap_uso DECIMAL(5, 2) NOT NULL,   
+    swap_uso DECIMAL(7, 2) NOT NULL,   
     disco_uso DECIMAL(5, 2) NOT NULL,  
-    disco_read DECIMAL(5, 2) NOT NULL,  
-    disco_write DECIMAL(5, 2) NOT NULL,  
+    disco_read DECIMAL(7, 2) NOT NULL,  
+    disco_write DECIMAL(7, 2) NOT NULL,  
     net_in DECIMAL(10, 2) DEFAULT 0,            -- Datos recibidos (Bytes)
     net_out DECIMAL(10, 2) DEFAULT 0,            -- Datos transmitidos (Bytes)
-    fecha_creado DATE DEFAULT CURRENT_DATE,
-    hora_creado TIME DEFAULT LOCALTIME(0)
+    fecha_creado TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS avisos(
@@ -52,23 +49,34 @@ CREATE TABLE IF NOT EXISTS avisos(
     componente VARCHAR(20) NOT NULL,
     tipo VARCHAR(20) NOT NULL,
     valor DECIMAL (5, 2) NOT NULL,
-    fecha TIMESTAMPTZ DEFAULT now()
+    fecha_creado TIMESTAMPTZ DEFAULT now()
 );
 
 
 -- vistas
 
-CREATE VIEW log AS
-SELECT * FROM logs 
-ORDER BY fecha DESC 
-LIMIT 10;
+CREATE OR REPLACE VIEW vista_logs AS
+SELECT 
+    id, usuario_id, accion, ip_origen, metodo, ruta, comando_ejecutado, status_codigo,
+    fecha_creado::DATE AS fecha, 
+    fecha_creado::TIME(0) AS hora
+FROM logs 
+ORDER BY fecha_creado DESC;
 
-CREATE VIEW estado_actual AS
-SELECT * FROM metricas_sistema 
-ORDER BY fecha_creado DESC 
-LIMIT 10;
 
-CREATE VIEW aviso AS
-SELECT * FROM avisos
-ORDER BY fecha DESC 
-LIMIT 10;
+CREATE OR REPLACE VIEW vista_metricas AS
+SELECT 
+    *,
+    fecha_creado::DATE AS fecha,
+    fecha_creado::TIME(0) AS hora
+FROM metricas_sistema 
+ORDER BY fecha_creado DESC;
+
+
+CREATE OR REPLACE VIEW vista_avisos AS
+SELECT 
+    id, componente, tipo, valor,
+    fecha_creado::DATE AS fecha,
+    fecha_creado::TIME(0) AS hora
+FROM avisos
+ORDER BY fecha_creado DESC;

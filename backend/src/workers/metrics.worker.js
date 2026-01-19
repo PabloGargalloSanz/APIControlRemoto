@@ -1,6 +1,8 @@
 import '../utils/envLoader.js';
 import si from 'systeminformation';
 import pool from '../db/db.js';
+import fs from 'fs';
+
 
 //debug
 console.log("Contraseña cargada:", process.env.DB_PASSWORD ? "SÍ" : "NO");
@@ -8,10 +10,13 @@ console.log("Contraseña cargada:", process.env.DB_PASSWORD ? "SÍ" : "NO");
 //guardar alertas
 const alertCounters = {};
 
+// almacenamiento ultimo valor disco
+let lastDisk = { r: 0, w: 0, t: Date.now() };
+
 // obtencion metricas
 const getSystemMetrics = async () => {
     try{
-        const [cpuLoad, tempRes, mem, disk, net, gpu, cpuInfo, dIO] = await Promise.all([
+        const [cpuLoad, tempRes, mem, disk, net, gpu, cpuInfo] = await Promise.all([
             si.currentLoad(),    // % CPU
             si.cpuTemperature(), // º CPU
             si.mem(),            // % RAM
@@ -24,6 +29,8 @@ const getSystemMetrics = async () => {
 
         // mb
         const MB = 1024 * 1024;
+        const ahora = Date.now();
+        const diffTiempo = (ahora - lastDisk.t) / 1000;
 
         //////////////// CPU
         const cpuUso = cpuLoad.currentLoad.toFixed(2);
@@ -55,20 +62,26 @@ const getSystemMetrics = async () => {
         // calculo % de RAM
         const ramUso = (mem.total > 0) ? ((mem.active / mem.total) * 100).toFixed(2) : 0;
         const ramDisponible = (mem.available / MB).toFixed(2); 
+
         //memoria intercambio (ssd)
         const swapUso = (mem.swaptotal > 0) ? ((mem.swapused / mem.swaptotal) * 100).toFixed(2) : 0;
 
-
-        ///////////DISCO
-
-        // % primer disco detectado 
+        /////////// DISCO 
         const discoUso = disk[0] ? disk[0].use.toFixed(2) : 0;
         
-        // MB/s lectura
-        const discoRead = dIO?.rIO_sec ? (dIO.rIO_sec / MB).toFixed(2) : 0;
-
-        // MB/s escritura
-        const discoWrite = dIO?.wIO_sec ? (dIO.wIO_sec / MB).toFixed(2) : 0; 
+        // lectura / escritura disco desde kernel
+        const stats = fs.readFileSync('/proc/diskstats', 'utf8');
+        const nvmeLine = stats.split('\n').find(line => line.includes('nvme0n1 ')); // nombre disco principal
+        const col = nvmeLine ? nvmeLine.trim().split(/\s+/) : [];
+        
+        const sectorsR = parseInt(col[5] || 0);
+        const sectorsW = parseInt(col[9] || 0);
+        
+        // calculo de MB/s: (Sectores nuevos - anteriores) * 512 bytes / tiempo / MB
+        const discoRead = lastDisk.r > 0 ? (((sectorsR - lastDisk.r) * 512) / diffTiempo / MB).toFixed(2) : "0.00";
+        const discoWrite = lastDisk.w > 0 ? (((sectorsW - lastDisk.w) * 512) / diffTiempo / MB).toFixed(2) : "0.00";
+        
+        lastDisk = { r: sectorsR, w: sectorsW, t: ahora };
 
         ////////// RED Bytes recibidos (rx) y transmitidos (tx)
         const netIn = (net[0] && net[0].rx_bytes) ? (net[0].rx_bytes / MB).toFixed(2) : 0;
@@ -207,4 +220,4 @@ const checkWarnings = ( data) => {
 // Inicio del worker debug
 console.log(' Worker de metricas iniciado. Frecuencia: 1 minuto.');
 collectMetrics();
-setInterval(collectMetrics, 60000);
+setInterval(collectMetrics, 1000);
