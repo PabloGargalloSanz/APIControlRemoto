@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS metricas_sistema (
     cpu_temp DECIMAL(5, 2) NOT NULL,   
     cpu_freq DECIMAL(5, 2) NOT NULL,   
     cpu_carga DECIMAL(5, 2) NOT NULL,   
+    n_cores INTEGER NOT NULL,   
     gpu_uso DECIMAL(5, 2) NOT NULL,   
     gpu_mem_uso DECIMAL(5, 2) NOT NULL,   
     gpu_temp DECIMAL(5, 2) NOT NULL,   
@@ -44,4 +45,12 @@ CREATE TABLE IF NOT EXISTS metricas_sistema (
     net_out DECIMAL(10, 2) DEFAULT 0,            -- Datos transmitidos (Bytes)
     fecha_creado DATE DEFAULT CURRENT_DATE,
     hora_creado TIME DEFAULT LOCALTIME(0)
+);
+
+CREATE TABLE IF NOT EXISTS avisos(
+    id SERIAL PRIMARY KEY,
+    componente VARCHAR(20) NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
+    valor DECIMAL (5, 2) NOT NULL,
+    fecha TIMESTAMPTZ DEFAULT now()
 );
