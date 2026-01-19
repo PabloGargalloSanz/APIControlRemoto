@@ -54,3 +54,21 @@ CREATE TABLE IF NOT EXISTS avisos(
     valor DECIMAL (5, 2) NOT NULL,
     fecha TIMESTAMPTZ DEFAULT now()
 );
+
+
+-- vistas
+
+CREATE VIEW log AS
+SELECT * FROM logs 
+ORDER BY fecha DESC 
+LIMIT 10;
+
+CREATE VIEW estado_actual AS
+SELECT * FROM metricas_sistema 
+ORDER BY fecha_creado DESC 
+LIMIT 10;
+
+CREATE VIEW aviso AS
+SELECT * FROM avisos
+ORDER BY fecha DESC 
+LIMIT 10;
