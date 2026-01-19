@@ -5,6 +5,9 @@ import pool from '../db/db.js';
 //debug
 console.log("Contraseña cargada:", process.env.DB_PASSWORD ? "SÍ" : "NO");
 
+//guardar alertas
+const alertCounters = {};
+
 // obtencion metricas
 const getSystemMetrics = async () => {
     try{
@@ -158,23 +161,32 @@ const checkWarnings = ( data) => {
 
     const evaluar = (valor, aviso, critico, accionBase, unidad = '%') => {
         const val = parseFloat(valor);
-        if (val > critico) {
-            alerts.push({ 
-                action: `${accionBase}_CRITICAL`, 
-                status: 499, 
-                level: 'danger', 
-                valor,
-                message: `${val}${unidad} supera el umbral crítico (${critico}${unidad})` 
-            });
 
-        } else if (val > aviso) {
-            alerts.push({ 
-                action: `${accionBase}_WARNING`, 
-                status: 299, 
-                level: 'warning', 
-                valor,
-                message: `${val}${unidad} supera el umbral de aviso (${aviso}${unidad})` 
-            });
+        if (!alertCounters[accionBase]) {
+            alertCounters[accionBase] = 0;
+        }
+
+        // guardado avisos 
+        if (val > aviso) {
+            // si pasa el dato aviso aumenta contador
+            alertCounters[accionBase]++;
+            
+            const esCritico = val > critico;
+            
+            // 3 fallos pasa a critico
+            const tiempoNecesario = esCritico ? 1 : 3;
+
+            if (alertCounters[accionBase] >= tiempoNecesario) {
+                alerts.push({ 
+                    action: `${accionBase}_${esCritico ? 'CRITICAL' : 'WARNING'}`, 
+                    level: esCritico ? 'DANGER' : 'warning', 
+                    valor: val,
+                    message: `${val}${unidad} supera el umbral ${esCritico ? 'critico' : 'de aviso'}`
+                });
+            }
+        } else {
+            // reset
+            alertCounters[accionBase] = 0;
         }
     };
 
@@ -186,32 +198,8 @@ const checkWarnings = ( data) => {
     evaluar(data.ramUso, 85, 95, 'RAM_USAGE');
     evaluar(data.swapUso, 10, 50, 'SWAP_USAGE');
     evaluar(data.discoUso, 85, 95, 'DISK_USAGE');
-
-    // carga CPU
-    const cargaVal = parseFloat(data.cpuCarga);
+    evaluar(data.cpuCarga, cores, cores * 1.5, 'CPU_LOAD');
     
-    //critico
-    if (cargaVal > ( cores * 1.5)) {
-        alerts.push({ 
-            action: 'CPU_LOAD_CRITICAL', 
-            status: 499, 
-            level: 'danger', 
-            valor,
-            message: `Carga ${cargaVal} muy superior a los ${cores} núcleos` 
-        });
-
-        //aviso
-    } else if (cargaVal > cores) {
-
-        alerts.push({ 
-            action: 'CPU_LOAD_WARNING', 
-            status: 299, 
-            level: 'warning', 
-            valor,
-            message: `Carga ${cargaVal} supera el número de núcleos (${cores})` 
-        });
-    }
-
     return alerts;
 };
 
