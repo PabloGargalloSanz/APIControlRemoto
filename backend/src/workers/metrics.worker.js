@@ -67,7 +67,8 @@ const getSystemMetrics = async () => {
         const swapUso = (mem.swaptotal > 0) ? ((mem.swapused / mem.swaptotal) * 100).toFixed(2) : 0;
 
         /////////// DISCO 
-        const discoUso = disk[0] ? disk[0].use.toFixed(2) : 0;
+        const mainDisk = disk.find(d => d.mount === '/') || disk[0];
+        const discoUso = mainDisk.use.toFixed(2);
         
         // lectura / escritura disco desde kernel
         const stats = fs.readFileSync('/proc/diskstats', 'utf8');
@@ -96,7 +97,7 @@ const getSystemMetrics = async () => {
     } catch(error){
         error.action = 'METRICS_FETCH_FAILED';
         error.status = 500;
-        //next(error);
+        next(error);
     }
 }
 
@@ -113,7 +114,7 @@ const uploadData = async (data) => {
 
         error.status = 500;
         error.action = 'UPLOAD_DB_FAIL';
-        //next(error);
+        next(error);
     }
 };
 
@@ -142,7 +143,7 @@ const collectMetrics = async () => {
 
                 error.status = 500;
                 error.action = 'UPLOAD_DB_FAIL';
-                //next(error);
+                next(error);
             }
         }
 
@@ -163,7 +164,7 @@ const collectMetrics = async () => {
 
         error.action = 'WORKER_FATAL_ERROR';
         error.status = 500;
-        //next(error);
+        next(error);
     }
 };
 
@@ -220,4 +221,4 @@ const checkWarnings = ( data) => {
 // Inicio del worker debug
 console.log(' Worker de metricas iniciado. Frecuencia: 1 minuto.');
 collectMetrics();
-setInterval(collectMetrics, 1000);
+setInterval(collectMetrics, 60000);
