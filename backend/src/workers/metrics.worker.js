@@ -1,7 +1,6 @@
 import '../utils/envLoader.js';
 import si from 'systeminformation';
 import pool from '../db/db.js';
-import {checkWarnings} from '../workers/warnings.worker.js';
 import fs from 'fs';
 
 
@@ -14,7 +13,7 @@ console.log("Contraseña cargada:", process.env.DB_PASSWORD ? "SÍ" : "NO");
 let lastDisk = { r: 0, w: 0, t: Date.now() };
 
 // obtencion metricas
-const getSystemMetrics = async () => {
+export const getSystemMetrics = async () => {
     try{ // quitar dIO y si.disksIO() cuando este server
         const [cpuLoad, tempRes, mem, disk, net, gpu, cpuInfo, dIO] = await Promise.all([
             si.currentLoad(),    // % CPU
@@ -105,12 +104,22 @@ const getSystemMetrics = async () => {
             cpuUso, cpuTemp, cpuFreq, cpuCarga, cpuCores, gpuUso, gpuMemUso, gpuTemp, ramUso, ramDisponible, swapUso, discoUso, discoRead, discoWrite, netIn, netOut
         };
 
+        //debug
+        console.log(`[${new Date().toLocaleTimeString()}] 
+            CPU: ${metricas.cpuUso}% (${metricas.cpuFreq}GHz) | Carga: ${metricas.cpuCarga} | Temp: ${metricas.cpuTemp}ºC | Nº cores: ${metricas.cpuCores}
+            GPU: ${metricas.gpuUso}% | VRAM: ${metricas.gpuMemUso}% | Temp: ${metricas.gpuTemp}ºC
+            RAM: ${metricas.ramUso}% (Disp: ${metricas.ramDisponible}MB) | Swap: ${metricas.swapUso}%
+            Disco: ${metricas.discoUso}% (R: ${metricas.discoRead}MB/s W: ${metricas.discoWrite}MB/s)
+            Net: In ${metricas.netIn}MB Out ${metricas.netOut}MB`
+        );
+
+        //subida metricas
+        await uploadData(metricas);
+
         return metricas;
         
     } catch(error){
-        error.action = 'METRICS_FETCH_FAILED';
-        error.status = 500;
-        //next(error);
+        console.error("Error obteniendo métricas:", error.message);
     }
 }
 
@@ -124,65 +133,5 @@ const uploadData = async (data) => {
 
     } catch (error) {
         console.error('❌ Error guardando en DB:', error.message);
-
-        error.status = 500;
-        error.action = 'UPLOAD_DB_FAIL';
-        //next(error);
     }
 };
-
-// obtencion y subida metricas
-const collectMetrics = async () => {
-    try {
-        //obtencion
-        const metrics = await getSystemMetrics();
-        
-        //alertas
-        const systemAlerts = checkWarnings(metrics);
-        
-        if (systemAlerts.length > 0) {
-            try {
-                for (const alert of systemAlerts) {
-                    console.log(`[${alert.level.toUpperCase()}] ${alert.action}: ${alert.message}`);
-                    
-                    const result = await pool.query(
-                        'INSERT INTO avisos (componente, tipo, valor) VALUES ($1, $2, $3)', 
-                        [alert.action, alert.level, alert.valor]
-                    );
-                }
-
-            } catch (error) {
-                console.error('❌ Error guardando en DB:', error.message);
-
-                error.status = 500;
-                error.action = 'UPLOAD_DB_FAIL';
-                //next(error);
-            }
-        }
-
-        //subida
-        await uploadData(metrics);
-        
-        //debug
-        console.log(`[${new Date().toLocaleTimeString()}] 
-            CPU: ${metrics.cpuUso}% (${metrics.cpuFreq}GHz) | Carga: ${metrics.cpuCarga} | Temp: ${metrics.cpuTemp}ºC | Nº cores: ${metrics.cpuCores}
-            GPU: ${metrics.gpuUso}% | VRAM: ${metrics.gpuMemUso}% | Temp: ${metrics.gpuTemp}ºC
-            RAM: ${metrics.ramUso}% (Disp: ${metrics.ramDisponible}MB) | Swap: ${metrics.swapUso}%
-            Disco: ${metrics.discoUso}% (R: ${metrics.discoRead}MB/s W: ${metrics.discoWrite}MB/s)
-            Net: In ${metrics.netIn}MB Out ${metrics.netOut}MB`
-        );
-
-    } catch (error) {
-        console.error('❌ Error en el Worker de metricas:', error.message);
-
-        error.action = 'WORKER_FATAL_ERROR';
-        error.status = 500;
-        //next(error);
-    }
-};
-
-
-// Inicio del worker debug
-console.log(' Worker de metricas iniciado. Frecuencia: 1 minuto.');
-collectMetrics();
-setInterval(collectMetrics, 60000);

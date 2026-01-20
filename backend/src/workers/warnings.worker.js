@@ -47,7 +47,27 @@ export const checkWarnings = ( data) => {
     evaluar(data.swapUso, 10, 50, 'SWAP_USAGE');
     evaluar(data.discoUso, 85, 95, 'DISK_USAGE');
     evaluar(data.cpuCarga, cores, cores * 1.5, 'CPU_LOAD');
-    
-    return alerts;
+
+    //subida bd
+    uploadWarnings(alerts);
 };
+
+export const uploadWarnings = async (alerts) => {
+    if (alerts.length > 0) {
+        try {
+            for (const alert of alerts) {
+                console.log(`[${alert.level.toUpperCase()}] ${alert.action}: ${alert.message}`);
+                
+                const result = await pool.query(
+                    'INSERT INTO avisos (componente, tipo, valor) VALUES ($1, $2, $3)', 
+                    [alert.action, alert.level, alert.valor]
+                );
+            }
+
+        } catch (error) {
+            console.error('❌ Error guardando en DB:', error.message);
+        }
+    }
+}
+    
 

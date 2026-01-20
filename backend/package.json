@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --env-file=.env app.js",
-    "metricas": "node src/workers/metrics.worker.js"
+    "metricas": "node src/jobs.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "node": "^24.12.0",
+    "node-cron": "^4.2.1",
     "pg": "^8.16.3",
     "systeminformation": "^5.30.4"
   },
