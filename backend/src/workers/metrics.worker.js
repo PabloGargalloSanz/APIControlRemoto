@@ -15,8 +15,8 @@ let lastDisk = { r: 0, w: 0, t: Date.now() };
 
 // obtencion metricas
 const getSystemMetrics = async () => {
-    try{
-        const [cpuLoad, tempRes, mem, disk, net, gpu, cpuInfo] = await Promise.all([
+    try{ // quitar dIO y si.disksIO() cuando este server
+        const [cpuLoad, tempRes, mem, disk, net, gpu, cpuInfo, dIO] = await Promise.all([
             si.currentLoad(),    // % CPU
             si.cpuTemperature(), // º CPU
             si.mem(),            // % RAM
@@ -45,7 +45,7 @@ const getSystemMetrics = async () => {
         const cpuCarga = (cpuLoad.avgLoad && cpuLoad.avgLoad.length > 0) ? cpuLoad.avgLoad[0] : 0;
 
         // n cores
-        const cpuCores= cpuInfo.cores
+        const cpuCores= cpuInfo.cores || 1;
 
         ////////////// GPU
         const mainGpu = gpu.controllers && gpu.controllers.length > 0 ? gpu.controllers[0] : null;
@@ -67,9 +67,10 @@ const getSystemMetrics = async () => {
         const swapUso = (mem.swaptotal > 0) ? ((mem.swapused / mem.swaptotal) * 100).toFixed(2) : 0;
 
         /////////// DISCO 
+        /* SERVIDOR
         const mainDisk = disk.find(d => d.mount === '/') || disk[0];
         const discoUso = mainDisk.use.toFixed(2);
-        
+
         // lectura / escritura disco desde kernel
         const stats = fs.readFileSync('/proc/diskstats', 'utf8');
         const nvmeLine = stats.split('\n').find(line => line.includes('nvme0n1 ')); // nombre disco principal
@@ -77,12 +78,24 @@ const getSystemMetrics = async () => {
         
         const sectorsR = parseInt(col[5] || 0);
         const sectorsW = parseInt(col[9] || 0);
-        
+
         // calculo de MB/s: (Sectores nuevos - anteriores) * 512 bytes / tiempo / MB
         const discoRead = lastDisk.r > 0 ? (((sectorsR - lastDisk.r) * 512) / diffTiempo / MB).toFixed(2) : "0.00";
         const discoWrite = lastDisk.w > 0 ? (((sectorsW - lastDisk.w) * 512) / diffTiempo / MB).toFixed(2) : "0.00";
         
         lastDisk = { r: sectorsR, w: sectorsW, t: ahora };
+        */
+       
+        //////////////////////////////////////
+       /*ORDENADOR CLASE*/
+        const discoUso = disk[0] ? disk[0].use.toFixed(2) : 0;
+
+        // MB/s lectura
+        const discoRead = dIO?.rIO_sec ? (dIO.rIO_sec / MB).toFixed(2) : 0;
+
+        // MB/s escritura
+        const discoWrite = dIO?.wIO_sec ? (dIO.wIO_sec / MB).toFixed(2) : 0; 
+        /////////////////////////////////////
 
         ////////// RED Bytes recibidos (rx) y transmitidos (tx)
         const netIn = (net[0] && net[0].rx_bytes) ? (net[0].rx_bytes / MB).toFixed(2) : 0;
@@ -97,7 +110,7 @@ const getSystemMetrics = async () => {
     } catch(error){
         error.action = 'METRICS_FETCH_FAILED';
         error.status = 500;
-        next(error);
+        //next(error);
     }
 }
 
@@ -114,7 +127,7 @@ const uploadData = async (data) => {
 
         error.status = 500;
         error.action = 'UPLOAD_DB_FAIL';
-        next(error);
+        //next(error);
     }
 };
 
@@ -143,7 +156,7 @@ const collectMetrics = async () => {
 
                 error.status = 500;
                 error.action = 'UPLOAD_DB_FAIL';
-                next(error);
+                //next(error);
             }
         }
 
@@ -164,7 +177,7 @@ const collectMetrics = async () => {
 
         error.action = 'WORKER_FATAL_ERROR';
         error.status = 500;
-        next(error);
+        //next(error);
     }
 };
 
