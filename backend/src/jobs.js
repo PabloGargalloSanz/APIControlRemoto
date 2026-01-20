@@ -7,6 +7,9 @@ import { checkWarnings } from './workers/warnings.worker.js';
 //debug
 console.log('Sistema de monitorización y mantenimiento iniciado.');
 
+// s min h dias diaMes mes diaSemana
+// *  *  *  *     *     *      *
+
 // obtencion de metricas y subida
 cron.schedule('* * * * *', async () => {
     // Inicio del worker debug
@@ -20,6 +23,6 @@ cron.schedule('* * * * *', async () => {
 });
 
 // limpieza de datos viejos
-cron.schedule('0 3 * * *', () => {
-    cleanOldData(30, 90); // 30 dias metricas y 60 dias avisos
+cron.schedule('0 0 3 * * *', () => {
+    cleanOldData(30, 60); // 30 dias metricas y 60 dias avisos
 });
