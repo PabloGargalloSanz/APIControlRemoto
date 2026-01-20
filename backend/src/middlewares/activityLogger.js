@@ -7,12 +7,16 @@ export const activityLogger = (req, res, next) => {
             const userId = req.userId || null;
             const rute = req.originalUrl;
             const method = req.method;
-            const action = req.action;
+            let action = req.action;
             const details = 'Acción realizada con exito';
             const statusCode = res.statusCode;
 
-            console.log(`Actividad: Usuario ${userId || 'Invitado'} -${action} ${method} ${rute} - IP: ${ip} - Estado: ${statusCode}`);
-
+            if(!action){
+                if(rute.includes('/api/metrics/status')){
+                    action = 'MONITOREO_SISTEMA';
+                }  
+            }
+            
             logAll(userId, action, ip, method, rute, details, statusCode);
         } 
     });
