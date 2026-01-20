@@ -73,7 +73,7 @@ body {
 .scroll-area { flex: 1; padding: 2rem; overflow-y: auto; }
 
 /* Components */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, minmax(200px, 1fr)); gap: 1.5rem; }
 .card { background: white; padding: 1.5rem; border-radius: 0.8rem; border: 1px solid #e2e8f0; }
 .stat-value { font-size: 2rem; font-weight: bold; margin: 0.5rem 0; }
 .progress-bg { background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden; }

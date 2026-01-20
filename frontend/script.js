@@ -5,7 +5,7 @@ let currentUser = "admin";
 
 // config front
 const API_URL = "http://localhost:3000/api/metrics/status"; 
-const POLLING_RATE = 5000;
+const POLLING_RATE = 10000; ///10s
 
 // Referencias DOM
 const loginScreen = document.getElementById('login-screen');
@@ -144,17 +144,75 @@ function quickAction(type) {
     addAuditLog(`ACTION: ${type.toUpperCase()}`, isBypassOps ? "ALERT" : "OK");
 }
 
+//funciones para formatear metricas
+function formatNetSpeed(mbValue) {
+    // pasamos a numero 
+    const mb = parseFloat(mbValue) || 0;
+
+    if (mb >= 1) {
+        return { val: mb.toFixed(2), unit: ' MB/s' };
+    } else if (mb > 0) {
+        const kb = mb * 1024;
+        return { val: kb.toFixed(2), unit: ' KB/s' };
+    } else {
+        return { val: "0", unit: ' B/s' };
+    }
+}
 
 // actualizacion metricas dashboard
 async function updateDashboard() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
-
         // barras de progreso
-        updateMetric('cpu', data.metrics.cpuUso);
-        updateMetric('ram', data.metrics.ramUso);
 
+        // cpu
+        updateMetric('cpu', data.metrics.cpuUso, data.metrics.cpuUso, '%', 'usage');
+        updateMetric('cpu-temp', data.metrics.cpuTemp, data.metrics.cpuTemp, 'ºC', 'usage');
+        const cargaPercent = (data.metrics.cpuCarga / data.metrics.cpuCores) * 100;
+        updateMetric('cpu-carga', data.metrics.cpuCarga, cargaPercent, '', 'usage');
+
+        // ram
+        const ramTotalMB = parseFloat(data.metrics.ramTotal) || 16000; 
+        const ramDispMB = parseFloat(data.metrics.ramDisponible) || 0;
+
+        const ramDisponibleGB = (ramDispMB / 1024).toFixed(2);
+        const ramLibrePercent = (ramDispMB / ramTotalMB) * 100;
+
+        updateMetric('ram', ramDisponibleGB, ramLibrePercent, ' GB', 'available');
+        updateMetric('ram-uso', data.metrics.ramUso, data.metrics.ramUso, '%', 'usage');
+        updateMetric('swap', data.metrics.swapUso, data.metrics.swapUso, '%', 'usage');
+
+        // disco
+        const DISK_LIMIT_MB = 2600; 
+
+        updateMetric('disk', data.metrics.discoUso, data.metrics.discoUso, '%', 'usage');
+
+        const readMB = parseFloat(data.metrics.discoRead) ;
+        const writeMB = parseFloat(data.metrics.discoWrite);
+
+        const readPercent = (readMB / DISK_LIMIT_MB) * 100;
+        const writePercent = (writeMB / DISK_LIMIT_MB) * 100;
+        const readFormatted = formatNetSpeed(readMB);
+        const writeFormatted = formatNetSpeed(writeMB);
+
+        updateMetric('disk-read', readFormatted.val, readPercent, readFormatted.unit, 'usage');
+        updateMetric('disk-write', writeFormatted.val, writePercent, writeFormatted.unit, 'usage');
+
+        // red
+        const NET_LIMIT_MB = 1000;
+
+        const rawInMB = data.metrics.netIn; 
+        const rawOutMB = data.metrics.netOut;
+
+        const inFormatted = formatNetSpeed(rawInMB);
+        const outFormatted = formatNetSpeed(rawOutMB);
+        const inPercent = Math.min((parseFloat(rawInMB) / NET_LIMIT_MB) * 100, 100);
+        const outPercent = Math.min((parseFloat(rawOutMB) / NET_LIMIT_MB) * 100, 100);
+
+        updateMetric('red-in', inFormatted.val, inPercent, inFormatted.unit, 'usage');
+        updateMetric('red-out', outFormatted.val, outPercent, outFormatted.unit, 'usage');
+        
         // alertas
         if (data.alerts && data.alerts.length > 0) {
             data.alerts.forEach(alert => {
@@ -166,18 +224,24 @@ async function updateDashboard() {
     }
 }
 
-function updateMetric(id, value) {
+function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
     const bar = document.getElementById(`${id}-bar`);
     const text = document.getElementById(`${id}-text`);
-    
-    if (bar && text) {
-        bar.style.width = `${value}%`;
-        text.innerText = `${value}%`;
 
-        // cambio color barra
-        if (value > 90) bar.style.backgroundColor = "#ff4444";
-        else if (value > 75) bar.style.backgroundColor = "#ffbb33";
-        else bar.style.backgroundColor = "#00C851";
+    if (bar && text) {
+        bar.style.width = `${percent}%`;
+        text.innerText = `${value}${unit}`;
+
+        // cambio de color
+        if (mode === 'usage') {
+            if (percent > 90) bar.style.backgroundColor = "#ff4444";
+            else if (percent > 75) bar.style.backgroundColor = "#ffbb33";
+            else bar.style.backgroundColor = "#00C851";
+        } else if (mode === 'available') {
+            if (percent < 10) bar.style.backgroundColor = "#ff4444"; 
+            else if (percent < 25) bar.style.backgroundColor = "#ffbb33"; 
+            else bar.style.backgroundColor = "#00C851"; 
+        }
     }
 }
 

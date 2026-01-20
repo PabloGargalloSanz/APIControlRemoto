@@ -82,24 +82,63 @@
                     <div class="stats-grid">
                         <div class="card">
                             <label>Uso de CPU</label>
-                            <div class="stat-value" id="cpu-text">0%</div>
+                            <div class="stat-value" id="cpu-text">0</div>
                             <div class="progress-bg"><div id="cpu-bar" class="progress-fill" style="width: 0%"></div></div>
                         </div>
                         <div class="card">
-                            <label>Memoria RAM</label>
-                            <div class="stat-value" id="ram-text">0%</div>
+                            <label>Temperatura CPU</label>
+                            <div class="stat-value" id="cpu-temp-text">0</div>
+                            <div class="progress-bg"><div id="cpu-temp-bar" class="progress-fill" style="width: 0%"></div></div>
+                        </div>
+                        <div class="card">
+                            <label>Carga de CPU</label>
+                            <div class="stat-value" id="cpu-carga-text">0</div>
+                            <div class="progress-bg"><div id="cpu-carga-bar" class="progress-fill" style="width: 0%"></div></div>
+                        </div>
+
+                        <div class="card">
+                            <label>Ram Disponible</label>
+                            <div class="stat-value" id="ram-text">0</div>
                             <div class="progress-bg"><div id="ram-bar" class="progress-fill purple" style="width: 0%"></div></div>
                         </div>
                         <div class="card">
-                            <label>Disco Duro</label>
-                            <div class="stat-value">68%</div>
-                            <div class="progress-bg"><div class="progress-fill orange" style="width: 68%"></div></div>
+                            <label>Uso RAM</label>
+                            <div class="stat-value" id="ram-uso-text">0</div>
+                            <div class="progress-bg"><div id="ram-uso-bar" class="progress-fill purple" style="width: 0%"></div></div>
                         </div>
                         <div class="card">
-                            <label>Estado Red</label>
-                            <div class="stat-value">Activo</div>
-                            <p class="stat-subtext">Latencia: 12ms</p>
+                            <label>Swap</label>
+                            <div class="stat-value" id="swap-text">0</div>
+                            <div class="progress-bg"><div id="swap-bar" class="progress-fill purple" style="width: 0%"></div></div>
                         </div>
+
+                        <div class="card">
+                            <label>Uso Disco Duro</label>
+                            <div class="stat-value" id="disk-text">0</div>
+                            <div class="progress-bg"><div id="disk-bar" class="progress-fill orange" style="width: 0%"></div></div>
+                        </div>
+                        <div class="card">
+                            <label>Velocidad Lectura </label>
+                            <div class="stat-value" id="disk-read-text">0</div>
+                            <div class="progress-bg"><div id="disk-read-bar" class="progress-fill orange" style="width: 0%"></div></div>
+                        </div>
+                        <div class="card">
+                            <label>Velocidad Escritura</label>
+                            <div class="stat-value" id="disk-write-text">0</div>
+                            <div class="progress-bg"><div id="disk-write-bar" class="progress-fill orange" style="width: 0%"></div></div>
+                        </div>
+                        
+                        <div class="card">
+                            <label>Red entrada</label>
+                            <div class="stat-value" id="red-in-text">0</div>
+                            <div class="progress-bg"><div id="red-in-bar" class="progress-fill orange" style="width: 0%"></div></div>
+                        </div>
+                        <div class="card">
+                            <label>Red salida</label>
+                            <div class="stat-value" id="red-out-text">0</div>
+                            <div class="progress-bg"><div id="red-out-bar" class="progress-fill orange" style="width: 0%"></div></div>
+                        </div>
+
                     </div>
                 </section>
 
