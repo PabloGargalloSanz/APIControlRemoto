@@ -66,7 +66,7 @@ export const getSystemMetrics = async () => {
         const swapUso = (mem.swaptotal > 0) ? ((mem.swapused / mem.swaptotal) * 100).toFixed(2) : 0;
 
         /////////// DISCO 
-        /* SERVIDOR
+        // SERVIDOR
         const mainDisk = disk.find(d => d.mount === '/') || disk[0];
         const discoUso = mainDisk.use.toFixed(2);
 
@@ -83,10 +83,10 @@ export const getSystemMetrics = async () => {
         const discoWrite = lastDisk.w > 0 ? (((sectorsW - lastDisk.w) * 512) / diffTiempo / MB).toFixed(2) : "0.00";
         
         lastDisk = { r: sectorsR, w: sectorsW, t: ahora };
-        */
+        //////////////
 
         //////////////////////////////////////
-       /*ORDENADOR CLASE*/
+       /*ORDENADOR CLASE
         const discoUso = disk[0] ? disk[0].use.toFixed(2) : 0;
 
         // MB/s lectura
@@ -94,6 +94,7 @@ export const getSystemMetrics = async () => {
 
         // MB/s escritura
         const discoWrite = dIO?.wIO_sec ? (dIO.wIO_sec / MB).toFixed(2) : 0; 
+        */
         /////////////////////////////////////
 
         ////////// RED Bytes recibidos (rx) y transmitidos (tx)

@@ -3,6 +3,10 @@ let isBypassLogin = false;
 let isBypassOps = false;
 let currentUser = "admin";
 
+// config front
+const API_URL = "http://localhost:3000/api/status"; 
+const POLLING_RATE = 5000;
+
 // Referencias DOM
 const loginScreen = document.getElementById('login-screen');
 const mainApp = document.getElementById('main-app');
@@ -152,3 +156,54 @@ function quickAction(type) {
     showToast(`Acción: ${type} solicitada`);
     addAuditLog(`ACTION: ${type.toUpperCase()}`, isBypassOps ? "ALERT" : "OK");
 }
+
+
+// actualizacion metricas dashboard
+async function updateDashboard() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        // barras de progreso
+        updateMetric('cpu', data.metrics.cpuUso);
+        updateMetric('ram', data.metrics.ramUso);
+
+        // alertas
+        if (data.alerts && data.alerts.length > 0) {
+            data.alerts.forEach(alert => {
+                showToast(alert.message, alert.level);
+            });
+        }
+    } catch (error) {
+        console.error("Error al obtener datos:", error);
+    }
+}
+
+function updateMetric(id, value) {
+    const bar = document.getElementById(`${id}-bar`);
+    const text = document.getElementById(`${id}-text`);
+    
+    if (bar && text) {
+        bar.style.width = `${value}%`;
+        text.innerText = `${value}%`;
+
+        // cambio color barra
+        if (value > 90) bar.style.backgroundColor = "#ff4444";
+        else if (value > 75) bar.style.backgroundColor = "#ffbb33";
+        else bar.style.backgroundColor = "#00C851";
+    }
+}
+
+function showToast(message, level) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.className = `toast show ${level}`; 
+
+    // ocultar popup 
+    setTimeout(() => {
+        toast.className = "toast hidden";
+    }, 4000); //4s
+}
+
+// Iniciar el bucle de consulta
+setInterval(updateDashboard, POLLING_RATE);
