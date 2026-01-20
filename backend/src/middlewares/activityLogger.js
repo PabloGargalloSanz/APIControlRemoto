@@ -11,6 +11,8 @@ export const activityLogger = (req, res, next) => {
             const details = 'Acción realizada con exito';
             const statusCode = res.statusCode;
 
+            console.log(`Actividad: Usuario ${userId || 'Invitado'} -${action} ${method} ${rute} - IP: ${ip} - Estado: ${statusCode}`);
+
             logAll(userId, action, ip, method, rute, details, statusCode);
         } 
     });

@@ -4,7 +4,7 @@ let isBypassOps = false;
 let currentUser = "admin";
 
 // config front
-const API_URL = "http://localhost:3000/api/status"; 
+const API_URL = "http://localhost:3000/api/metrics/status"; 
 const POLLING_RATE = 5000;
 
 // Referencias DOM
@@ -38,7 +38,7 @@ function doLogin(isBypass) {
         addAuditLog("LOGIN: Usuario autenticado", "OK");
     }
     
-    startMetricsSimulation();
+    updateDashboard();
 }
 
 function logout() {
@@ -73,19 +73,6 @@ function toggleBypass(active) {
     }
 }
 
-// --- MÉTRICAS ---
-function startMetricsSimulation() {
-    setInterval(() => {
-        const cpu = Math.floor(Math.random() * 30) + 5;
-        const ram = Math.floor(Math.random() * 10) + 40;
-        
-        document.getElementById('cpu-text').innerText = cpu + "%";
-        document.getElementById('cpu-bar').style.width = cpu + "%";
-        
-        document.getElementById('ram-text').innerText = ram + "%";
-        document.getElementById('ram-bar').style.width = ram + "%";
-    }, 2500);
-}
 
 // --- TERMINAL ---
 const termInput = document.getElementById('terminal-input');
