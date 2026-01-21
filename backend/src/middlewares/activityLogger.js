@@ -4,7 +4,7 @@ export const activityLogger = (req, res, next) => {
     res.on('finish', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
             const ip = req.ip || '0.0.0.0';
-            const userId = req.userId || null;
+            let userId = req.userId || null;
             const rute = req.originalUrl;
             const method = req.method;
             let action = req.action;
@@ -14,6 +14,7 @@ export const activityLogger = (req, res, next) => {
             if(!action){
                 if(rute.includes('/api/metrics/status')){
                     action = 'MONITOREO_SISTEMA';
+                    userId= '1';
                 }  
             }
             
