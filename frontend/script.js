@@ -122,19 +122,13 @@ function addAuditLog(action, status) {
     tbody.prepend(row);
 }
 
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.innerText = msg;
-    toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 3000);
-}
 
 function quickAction(type) {
     showToast(`Acción: ${type} solicitada`);
     addAuditLog(`ACTION: ${type.toUpperCase()}`, isBypassOps ? "ALERT" : "OK");
 }
 
-// actualizacion metricas dashboard
+// actualizacion metricas dashboard///////////////////
 async function updateDashboard() {
     try {
         const response = await fetch(API_URL, {
@@ -203,31 +197,37 @@ function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
     }
 }
 
+
+// popups //////////////////////////////////
 function showToast(message, level = 'info') {
     const container = document.getElementById("toast-container");
     if (!container) return;
 
-    // 1. Creamos el nuevo elemento de alerta
     const toast = document.createElement("div");
     
-    // 2. Configuramos las clases y el texto
     const activeLevel = level.toLowerCase();
     toast.className = `toast ${activeLevel}`;
     toast.innerText = message;
 
-    // 3. Lo añadimos al contenedor
     container.appendChild(toast);
 
-    // 4. Programamos su eliminación automática
     setTimeout(() => {
-        // Añadimos una clase de salida para que no desaparezca de golpe
         toast.classList.add('fade-out');
         
-        // Esperamos a que termine la animación de salida para borrarlo del HTML
         setTimeout(() => {
             toast.remove();
         }, 500); 
-    }, 4000); // Se queda visible 4 segundos
+    }, 4000); //  visible 4 segundos
 }
-// Iniciar el bucle de consulta
+
+/*
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+*/
+
+// Iniciar el bucle de consulta////////////////////////////////////////////
 setInterval(updateDashboard, POLLING_RATE);
