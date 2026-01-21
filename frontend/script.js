@@ -12,7 +12,7 @@ const loginScreen = document.getElementById('login-screen');
 const mainApp = document.getElementById('main-app');
 const loginForm = document.getElementById('login-form');
 
-// --- MANEJO DE LOGIN ---
+// login////////////////////////////////
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('username').value;
@@ -28,17 +28,16 @@ loginForm.addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (response.ok) {
-            // Guardamos el token para futuras peticiones
+            // guardamso token
             localStorage.setItem('auth_token', data.token);
             currentUser = email;
             
-            // Entramos a la app
             loginScreen.classList.add('hidden');
             mainApp.classList.remove('hidden');
-            showToast(`Bienvenido, ${email}`, 'info');
             
             // Iniciamos el dashboard
             updateDashboard();
+
         } else {
             showToast(data.error || "Acceso denegado", 'danger');
         }
@@ -47,40 +46,25 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
+// logout
 function logout() {
     location.reload();
 }
 
-// --- NAVEGACIÓN ---
+// navegacion////////////////////////////
 function switchPage(pageId) {
-    // Actualizar botones del menú
+    // actualizar botones
     document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
     document.getElementById(`btn-${pageId}`).classList.add('active');
     
-    // Cambiar secciones
+    // cambiar secciones
     document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
-    document.getElementById(`page-${pageId}`).classList.remove('hidden');
-    
+    document.getElementById(`page-${pageId}`).classList.remove('hidden');    
     document.getElementById('page-title').innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
 }
 
-// --- BYPASS DE OPERACIONES ---
-function toggleBypass(active) {
-    isBypassOps = active;
-    const alertBar = document.getElementById('bypass-alert');
-    if(active) {
-        alertBar.classList.remove('hidden');
-        showToast("Modo Bypass Operacional: ON");
-        addAuditLog("SECURITY: OPS BYPASS ACTIVATED", "ALERT");
-    } else {
-        alertBar.classList.add('hidden');
-        showToast("Seguridad restaurada");
-        addAuditLog("SECURITY: OPS BYPASS DEACTIVATED", "OK");
-    }
-}
 
-
-// --- TERMINAL ---
+// terminal shell///////////////////////////////////////
 const termInput = document.getElementById('terminal-input');
 const termOutput = document.getElementById('terminal-output');
 
@@ -121,7 +105,7 @@ if(termInput) {
     });
 }
 
-// --- UTILIDADES ---
+// logs auditoria////////////////////////////////////////
 function addAuditLog(action, status) {
     const tbody = document.getElementById('audit-logs');
     const now = new Date().toLocaleTimeString();
@@ -150,21 +134,6 @@ function quickAction(type) {
     addAuditLog(`ACTION: ${type.toUpperCase()}`, isBypassOps ? "ALERT" : "OK");
 }
 
-//funciones para formatear metricas
-function formatNetSpeed(mbValue) {
-    // pasamos a numero 
-    const mb = parseFloat(mbValue) || 0;
-
-    if (mb >= 1) {
-        return { val: mb.toFixed(2), unit: ' MB/s' };
-    } else if (mb > 0) {
-        const kb = mb * 1024;
-        return { val: kb.toFixed(2), unit: ' KB/s' };
-    } else {
-        return { val: "0", unit: ' B/s' };
-    }
-}
-
 // actualizacion metricas dashboard
 async function updateDashboard() {
     try {
@@ -173,61 +142,36 @@ async function updateDashboard() {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
         });
-        const data = await response.json();
-        // barras de progreso
 
+        const data = await response.json();
+        const m = data.metrics;
+
+        // barras de progreso
         // cpu
-        updateMetric('cpu', data.metrics.cpuUso, data.metrics.cpuUso, '%', 'usage');
-        updateMetric('cpu-temp', data.metrics.cpuTemp, data.metrics.cpuTemp, 'ºC', 'usage');
-        const cargaPercent = (data.metrics.cpuCarga / data.metrics.cpuCores) * 100;
-        updateMetric('cpu-carga', data.metrics.cpuCarga, cargaPercent, '', 'usage');
+        updateMetric('cpu', m.cpu.val, m.cpu.percent, m.cpu.unit, 'usage');
+        updateMetric('cpu-temp', m.cpuTemp.val, m.cpuTemp.percent, m.cpuTemp.unit, 'usage');
+        updateMetric('cpu-carga', m.cpuCarga.val, m.cpuCarga.percent, m.cpuCarga.unit, 'usage');
 
         // ram
-        const ramTotalMB = parseFloat(data.metrics.ramTotal) || 16000; 
-        const ramDispMB = parseFloat(data.metrics.ramDisponible) || 0;
-
-        const ramDisponibleGB = (ramDispMB / 1024).toFixed(2);
-        const ramLibrePercent = (ramDispMB / ramTotalMB) * 100;
-
-        updateMetric('ram', ramDisponibleGB, ramLibrePercent, ' GB', 'available');
-        updateMetric('ram-uso', data.metrics.ramUso, data.metrics.ramUso, '%', 'usage');
-        updateMetric('swap', data.metrics.swapUso, data.metrics.swapUso, '%', 'usage');
+        updateMetric('ram', m.ram.val, m.ram.percent, m.ram.unit, 'available');
+        updateMetric('ram-uso', m.ramUso.val, m.ramUso.percent, m.ramUso.unit, 'usage');
+        updateMetric('swap', m.swapUso.val, m.swapUso.percent, m.swapUso.unit, 'usage');
 
         // disco
-        const DISK_LIMIT_MB = 2600; 
-
-        updateMetric('disk', data.metrics.discoUso, data.metrics.discoUso, '%', 'usage');
-
-        const readMB = parseFloat(data.metrics.discoRead) ;
-        const writeMB = parseFloat(data.metrics.discoWrite);
-
-        const readPercent = (readMB / DISK_LIMIT_MB) * 100;
-        const writePercent = (writeMB / DISK_LIMIT_MB) * 100;
-        const readFormatted = formatNetSpeed(readMB);
-        const writeFormatted = formatNetSpeed(writeMB);
-
-        updateMetric('disk-read', readFormatted.val, readPercent, readFormatted.unit, 'usage');
-        updateMetric('disk-write', writeFormatted.val, writePercent, writeFormatted.unit, 'usage');
+        updateMetric('disk', m.discoUso.val, m.discoUso.percent, m.discoUso.unit, 'usage');
+        updateMetric('disk-read', m.diskRead.val, m.diskRead.percent, m.diskRead.unit, 'usage');
+        updateMetric('disk-write', m.diskWrite.val, m.diskWrite.percent, m.diskWrite.unit, 'usage');
 
         // red
-        const NET_LIMIT_MB = 1000;
+        updateMetric('red-in', m.netIn.val, m.netIn.percent, m.netIn.unit, 'usage');
+        updateMetric('red-out', m.netOut.val, m.netOut.percent, m.netOut.unit, 'usage');
 
-        const rawInMB = data.metrics.netIn; 
-        const rawOutMB = data.metrics.netOut;
-
-        const inFormatted = formatNetSpeed(rawInMB);
-        const outFormatted = formatNetSpeed(rawOutMB);
-        const inPercent = Math.min((parseFloat(rawInMB) / NET_LIMIT_MB) * 100, 100);
-        const outPercent = Math.min((parseFloat(rawOutMB) / NET_LIMIT_MB) * 100, 100);
-
-        updateMetric('red-in', inFormatted.val, inPercent, inFormatted.unit, 'usage');
-        updateMetric('red-out', outFormatted.val, outPercent, outFormatted.unit, 'usage');
-        
+        // alertas
         if (data.alerts && data.alerts.length > 0) {
             data.alerts.forEach((alert, index) => {
                 setTimeout(() => {
                     showToast(alert.message, alert.level);
-                }, index * 1000);
+                }, index * 300);
             });
         }
 
@@ -235,7 +179,6 @@ async function updateDashboard() {
         console.error("Error al obtener datos:", error);
     }
 }
-
 
 // dar colores y unidades a las barras
 function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
@@ -251,6 +194,7 @@ function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
             if (percent > 90) bar.style.backgroundColor = "#ff4444";
             else if (percent > 75) bar.style.backgroundColor = "#ffbb33";
             else bar.style.backgroundColor = "#00C851";
+
         } else if (mode === 'available') {
             if (percent < 10) bar.style.backgroundColor = "#ff4444"; 
             else if (percent < 25) bar.style.backgroundColor = "#ffbb33"; 

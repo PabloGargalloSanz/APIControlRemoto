@@ -3,11 +3,8 @@ import si from 'systeminformation';
 import pool from '../db/db.js';
 import fs from 'fs';
 
-
 //debug
 console.log("Contraseña cargada:", process.env.DB_PASSWORD ? "SÍ" : "NO");
-
-
 
 // almacenamiento ultimo valor disco
 let lastDisk = { r: 0, w: 0, t: Date.now() };
@@ -28,6 +25,7 @@ export const getSystemMetrics = async () => {
 
         // mb
         const MB = 1024 * 1024;
+        const GB = MB * 1024;
         const ahora = Date.now();
         const diffTiempo = (ahora - lastDisk.t) / 1000;
 
@@ -35,7 +33,7 @@ export const getSystemMetrics = async () => {
         const cpuUso = cpuLoad.currentLoad.toFixed(2);
 
         // si la placa no tiene receptor temp = 0
-        const cpuTemp = (tempRes.main && tempRes.main > 0) ? tempRes.main.toFixed(1) : 0;
+        const cpuTemp = (tempRes.main && tempRes.main > 0) ? tempRes.main : 0;
         
         //frecuencia en ghz
         const cpuFreq = cpuInfo.speed;
@@ -60,15 +58,15 @@ export const getSystemMetrics = async () => {
 
         // calculo % de RAM
         const ramUso = (mem.total > 0) ? ((mem.active / mem.total) * 100).toFixed(2) : 0;
-        const ramDisponible = (mem.available / MB).toFixed(2); 
+        const ramDisponible = (mem.available / GB).toFixed(2); 
 
         //memoria intercambio (ssd)
-        const swapUso = (mem.swaptotal > 0) ? ((mem.swapused / mem.swaptotal) * 100).toFixed(2) : 0;
+        const swapUso = (mem.swaptotal > 0) ? ((mem.swapused / mem.swaptotal) * 100) : 0;
 
         /////////// DISCO 
         // SERVIDOR
         const mainDisk = disk.find(d => d.mount === '/') || disk[0];
-        const discoUso = mainDisk.use.toFixed(2);
+        const discoUso = mainDisk.use;
 
         // lectura / escritura disco desde kernel
         const stats = fs.readFileSync('/proc/diskstats', 'utf8');
@@ -87,13 +85,13 @@ export const getSystemMetrics = async () => {
 
         //////////////////////////////////////
        /*ORDENADOR CLASE
-        const discoUso = disk[0] ? disk[0].use.toFixed(2) : 0;
+        const discoUso = disk[0] ? disk[0].use : 0;
 
         // MB/s lectura
-        const discoRead = dIO?.rIO_sec ? (dIO.rIO_sec / MB).toFixed(2) : 0;
+        const discoRead = dIO?.rIO_sec ? (dIO.rIO_sec / MB) : 0;
 
         // MB/s escritura
-        const discoWrite = dIO?.wIO_sec ? (dIO.wIO_sec / MB).toFixed(2) : 0; 
+        const discoWrite = dIO?.wIO_sec ? (dIO.wIO_sec / MB) : 0; 
         */
         /////////////////////////////////////
 
@@ -109,7 +107,7 @@ export const getSystemMetrics = async () => {
         console.log(`[${new Date().toLocaleTimeString()}] 
             CPU: ${metricas.cpuUso}% (${metricas.cpuFreq}GHz) | Carga: ${metricas.cpuCarga} | Temp: ${metricas.cpuTemp}ºC | Nº cores: ${metricas.cpuCores}
             GPU: ${metricas.gpuUso}% | VRAM: ${metricas.gpuMemUso}% | Temp: ${metricas.gpuTemp}ºC
-            RAM: ${metricas.ramUso}% (Disp: ${metricas.ramDisponible}MB) | Swap: ${metricas.swapUso}%
+            RAM: ${metricas.ramUso}% (Disp: ${metricas.ramDisponible}GB) | Swap: ${metricas.swapUso}%
             Disco: ${metricas.discoUso}% (R: ${metricas.discoRead}MB/s W: ${metricas.discoWrite}MB/s)
             Net: In ${metricas.netIn}MB Out ${metricas.netOut}MB`
         );
