@@ -163,6 +163,7 @@ async function updateDashboard() {
         // alertas
         if (data.alerts && data.alerts.length > 0) {
             data.alerts.forEach((alert, index) => {
+                addAuditLog(alert.message, "ALERT");
                 setTimeout(() => {
                     showToast(alert.message, alert.level);
                 }, index * 300);
