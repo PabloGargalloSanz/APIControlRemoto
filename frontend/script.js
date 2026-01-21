@@ -141,6 +141,7 @@ async function updateDashboard() {
         const m = data.metrics;
 
         // barras de progreso
+        
         // cpu
         updateMetric('cpu', m.cpu.val, m.cpu.percent, m.cpu.unit, 'usage');
         updateMetric('cpu-temp', m.cpuTemp.val, m.cpuTemp.percent, m.cpuTemp.unit, 'usage');
