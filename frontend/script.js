@@ -13,33 +13,39 @@ const mainApp = document.getElementById('main-app');
 const loginForm = document.getElementById('login-form');
 
 // --- MANEJO DE LOGIN ---
-loginForm.addEventListener('submit', (e) => {
+loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const userInput = document.getElementById('username').value;
-    currentUser = userInput;
-    doLogin(false);
-});
+    const email = document.getElementById('username').value;
+    const tokenInput = document.getElementById('token').value; 
 
-function loginBypass() {
-    currentUser = "BYPASS_ADMIN";
-    doLogin(true);
-}
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: tokenInput })
+        });
 
-function doLogin(isBypass) {
-    isBypassLogin = isBypass;
-    loginScreen.classList.add('hidden');
-    mainApp.classList.remove('hidden');
-    
-    if(isBypass) {
-        showToast("⚠️ ACCESO MEDIANTE BYPASS");
-        addAuditLog("SECURITY: LOGIN BYPASS", "ALERT");
-    } else {
-        showToast("Bienvenido al Panel de Control");
-        addAuditLog("LOGIN: Usuario autenticado", "OK");
+        const data = await response.json();
+
+        if (response.ok) {
+            // Guardamos el token para futuras peticiones
+            localStorage.setItem('auth_token', data.token);
+            currentUser = email;
+            
+            // Entramos a la app
+            loginScreen.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            showToast(`Bienvenido, ${email}`, 'info');
+            
+            // Iniciamos el dashboard
+            updateDashboard();
+        } else {
+            showToast(data.error || "Acceso denegado", 'danger');
+        }
+    } catch (error) {
+        showToast("Error de conexión con el servidor de autenticación", 'danger');
     }
-    
-    updateDashboard();
-}
+});
 
 function logout() {
     location.reload();
@@ -161,14 +167,13 @@ function formatNetSpeed(mbValue) {
 
 // actualizacion metricas dashboard
 async function updateDashboard() {
-    const alertsToShow = [];
-
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        });
         const data = await response.json();
-
-        
-
         // barras de progreso
 
         // cpu

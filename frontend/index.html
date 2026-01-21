@@ -20,20 +20,14 @@
             <form id="login-form">
                 <div class="form-group">
                     <label>Usuario</label>
-                    <input type="text" id="username" placeholder="admin" required>
+                    <input type="text" id="username" placeholder="usuario" required>
                 </div>
                 <div class="form-group">
-                    <label>Token de Acceso</label>
+                    <label>Contraseña</label>
                     <input type="password" id="token" placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="btn-primary">Entrar</button>
             </form>
-
-            <div class="login-footer">
-                <button onclick="loginBypass()" class="btn-bypass-login">
-                    ⚠️ Acceso de Emergencia (Bypass Login)
-                </button>
-            </div>
         </div>
     </div>
 
@@ -54,26 +48,14 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="bypass-control">
-                    <label>Bypass Operacional</label>
-                    <input type="checkbox" id="bypass-toggle" onchange="toggleBypass(this.checked)">
-                </div>
                 <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
             </div>
         </aside>
 
         <!-- CONTENIDO PRINCIPAL -->
         <main class="content">
-            <div id="bypass-alert" class="alert-bar hidden">
-                MODO BYPASS ACTIVO: SEGURIDAD DESHABILITADA
-            </div>
-
             <header class="content-header">
                 <h2 id="page-title">Dashboard</h2>
-                <div class="header-actions">
-                    <button class="btn-action" onclick="quickAction('Reinicio')">Reiniciar</button>
-                    <button class="btn-danger" onclick="quickAction('Apagado')">Apagar</button>
-                </div>
             </header>
 
             <div class="scroll-area">
