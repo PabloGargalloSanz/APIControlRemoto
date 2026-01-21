@@ -1,8 +1,8 @@
 import './utils/envLoader.js';
 import cron from 'node-cron';
-import { getSystemMetrics } from './workers/metrics.worker.js';
+import { getSystemMetrics, uploadData  } from './workers/metrics.worker.js';
 import { cleanOldData } from './workers/maintenance.worker.js';
-import { checkWarnings } from './workers/warnings.worker.js';
+import { checkWarnings, uploadWarnings } from './workers/warnings.worker.js';
 
 //debug
 console.log('Sistema de monitorización y mantenimiento iniciado.');
@@ -17,9 +17,14 @@ cron.schedule('* * * * *', async () => {
 
     const metrics = await getSystemMetrics();
 
+    await uploadData(metrics);
+
+    let warnings = [];
+
     if(metrics){
-        checkWarnings(metrics);
+        warnings = checkWarnings(metrics);
     }
+    await uploadWarnings(warnings);
 });
 
 // limpieza de datos viejos

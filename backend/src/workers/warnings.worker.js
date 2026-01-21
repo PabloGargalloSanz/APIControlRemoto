@@ -49,8 +49,6 @@ export const checkWarnings = ( data) => {
     evaluar(data.discoUso, 85, 95, 'DISK_USAGE', 'Uso de Disco');
     evaluar(data.cpuCarga, cores, cores * 1.5, 'CPU_LOAD');
 
-    //subida bd
-    uploadWarnings(alerts);
     return alerts;
 };
 

@@ -114,9 +114,6 @@ export const getSystemMetrics = async () => {
             Net: In ${metricas.netIn}MB Out ${metricas.netOut}MB`
         );
 
-        //subida metricas
-        await uploadData(metricas);
-
         return metricas;
         
     } catch(error){
@@ -125,7 +122,7 @@ export const getSystemMetrics = async () => {
 }
 
 // carga db
-const uploadData = async (data) => {
+export const uploadData = async (data) => {
     try {
         const result = await pool.query(
             'INSERT INTO metricas_sistema (cpu_uso, cpu_temp, cpu_freq, cpu_carga, n_cores, gpu_uso, gpu_mem_uso, gpu_temp, ram_uso, ram_disponible, swap_uso, disco_uso, disco_read, disco_write, net_in, net_out) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)', 
