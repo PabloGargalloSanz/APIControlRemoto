@@ -161,9 +161,14 @@ function formatNetSpeed(mbValue) {
 
 // actualizacion metricas dashboard
 async function updateDashboard() {
+    const alertsToShow = [];
+
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
+
+        
+
         // barras de progreso
 
         // cpu
@@ -213,17 +218,21 @@ async function updateDashboard() {
         updateMetric('red-in', inFormatted.val, inPercent, inFormatted.unit, 'usage');
         updateMetric('red-out', outFormatted.val, outPercent, outFormatted.unit, 'usage');
         
-        // alertas
         if (data.alerts && data.alerts.length > 0) {
-            data.alerts.forEach(alert => {
-                showToast(alert.message, alert.level);
+            data.alerts.forEach((alert, index) => {
+                setTimeout(() => {
+                    showToast(alert.message, alert.level);
+                }, index * 1000);
             });
         }
+
     } catch (error) {
         console.error("Error al obtener datos:", error);
     }
 }
 
+
+// dar colores y unidades a las barras
 function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
     const bar = document.getElementById(`${id}-bar`);
     const text = document.getElementById(`${id}-text`);
@@ -245,16 +254,31 @@ function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
     }
 }
 
-function showToast(message, level) {
-    const toast = document.getElementById("toast");
+function showToast(message, level = 'info') {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    // 1. Creamos el nuevo elemento de alerta
+    const toast = document.createElement("div");
+    
+    // 2. Configuramos las clases y el texto
+    const activeLevel = level.toLowerCase();
+    toast.className = `toast ${activeLevel}`;
     toast.innerText = message;
-    toast.className = `toast show ${level}`; 
 
-    // ocultar popup 
+    // 3. Lo añadimos al contenedor
+    container.appendChild(toast);
+
+    // 4. Programamos su eliminación automática
     setTimeout(() => {
-        toast.className = "toast hidden";
-    }, 4000); //4s
+        // Añadimos una clase de salida para que no desaparezca de golpe
+        toast.classList.add('fade-out');
+        
+        // Esperamos a que termine la animación de salida para borrarlo del HTML
+        setTimeout(() => {
+            toast.remove();
+        }, 500); 
+    }, 4000); // Se queda visible 4 segundos
 }
-
 // Iniciar el bucle de consulta
 setInterval(updateDashboard, POLLING_RATE);

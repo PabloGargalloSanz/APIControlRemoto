@@ -1,3 +1,4 @@
+import pool from '../db/db.js';
 /////////// avisos
 
 //guardar alertas
@@ -7,7 +8,7 @@ export const checkWarnings = ( data) => {
     const alerts = [];
     const cores = data.cpuCores || 1; 
 
-    const evaluar = (valor, aviso, critico, accionBase, unidad = '%') => {
+    const evaluar = (valor, aviso, critico, accionBase, nombre, unidad = '%') => {
         const val = parseFloat(valor);
 
         if (!alertCounters[accionBase]) {
@@ -29,7 +30,7 @@ export const checkWarnings = ( data) => {
                     action: `${accionBase}_${esCritico ? 'CRITICAL' : 'WARNING'}`, 
                     level: esCritico ? 'DANGER' : 'warning', 
                     valor: val,
-                    message: `${val}${unidad} supera el umbral ${esCritico ? 'critico' : 'de aviso'}`
+                    message: `${nombre}: ${val}${unidad} `
                 });
             }
         } else {
@@ -39,17 +40,18 @@ export const checkWarnings = ( data) => {
     };
 
     // tabla
-    evaluar(data.cpuUso, 80, 95, 'CPU_USAGE');
-    evaluar(data.cpuTemp, 75, 90, 'CPU_TEMP', 'ºC');
-    evaluar(data.gpuUso, 85, 98, 'GPU_USAGE');
-    evaluar(data.gpuTemp, 80, 92, 'GPU_TEMP', 'ºC');
-    evaluar(data.ramUso, 85, 95, 'RAM_USAGE');
-    evaluar(data.swapUso, 10, 50, 'SWAP_USAGE');
-    evaluar(data.discoUso, 85, 95, 'DISK_USAGE');
+    evaluar(data.cpuUso, 80, 95, 'CPU_USAGE', 'Uso de CPU');
+    evaluar(data.cpuTemp, 75, 90, 'CPU_TEMP', 'Temperatura de CPU', 'ºC');
+    evaluar(data.gpuUso, 85, 98, 'GPU_USAGE', 'Uso de GPU');
+    evaluar(data.gpuTemp, 80, 92, 'GPU_TEMP', 'Temperatura de GPU', 'ºC');
+    evaluar(data.ramUso, 85, 95, 'RAM_USAGE', 'Uso de RAM');
+    evaluar(data.swapUso, 10, 50, 'SWAP_USAGE', 'Uso de Swap');
+    evaluar(data.discoUso, 85, 95, 'DISK_USAGE', 'Uso de Disco');
     evaluar(data.cpuCarga, cores, cores * 1.5, 'CPU_LOAD');
 
     //subida bd
     uploadWarnings(alerts);
+    return alerts;
 };
 
 export const uploadWarnings = async (alerts) => {
