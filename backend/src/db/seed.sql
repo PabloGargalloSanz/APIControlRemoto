@@ -2,6 +2,9 @@ CREATE DATABASE control_remoto;
 
 \c control_remoto
 
+DROP TABLE avisos, metricas_sistema, logs, usuarios CASCADE;
+DROP VIEW vista_logs, vista_metricas, vista_avisos;
+
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     email VARCHAR(50) UNIQUE NOT NULL,
