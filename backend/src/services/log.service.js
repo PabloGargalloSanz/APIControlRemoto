@@ -27,8 +27,8 @@ export const logAll = (userId, action, ip, method = null, rute = null, details, 
 }
 
 //Servicio log shell
-export const logShell = (userId, ip, command, details, statusCode) => {
-    newLog(userId, 'SHELL', ip, 'EXEC', null, command, details, statusCode);
+export const logShell = (userId, ip, route, command, details, statusCode) => {
+    newLog(userId, 'SHELL', ip, 'EXEC', route, command, details, statusCode);
 }
 
 //Servicio log error

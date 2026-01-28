@@ -1,4 +1,4 @@
-import { logAll } from '../services/log.service.js';
+import { logAll, logShell } from '../services/log.service.js';
 
 export const activityLogger = (req, res, next) => {
     res.on('finish', () => {
@@ -7,6 +7,7 @@ export const activityLogger = (req, res, next) => {
             let userId = req.userId || null;
             const rute = req.originalUrl;
             const method = req.method;
+            let command= req.command;
             let action = req.action;
             const details = 'Acción realizada con exito';
             const statusCode = res.statusCode;
@@ -18,7 +19,15 @@ export const activityLogger = (req, res, next) => {
                 }  
             }
             
-            logAll(userId, action, ip, method, rute, details, statusCode);
+            //si la ruta viene de la shell
+            if (rute,includes('/api/shell/execute')){
+                logShell(userId, ip, rute, command, details, statusCode);
+                next();
+
+            } else{
+
+                logAll(userId, action, ip, method, rute, details, statusCode);
+            }
         } 
     });
     next();
