@@ -109,10 +109,6 @@ if(termInput) {
                     currentPath = data.cwd;
                 }
 
-                setTimeout(() => {
-                    termOutput.scrollTop = termOutput.scrollHeight;
-                }, 50);
-
                 if (response.ok) {
                     resp.innerText = data.output || "Comando ejecutado (sin salida)";
                 } else {
@@ -120,6 +116,13 @@ if(termInput) {
                     resp.style.color = "#ef4444";
                     showToast(data.error || "Fallo en la ejecución", 'danger');
                 }
+                setTimeout(() => {
+                    termOutput.scrollTo({
+                        top: termOutput.scrollHeight,
+                        behavior: 'smooth' 
+                    });
+                }, 100);
+            
             } catch (error) {
                 showToast("Error de conexión con el servidor de autenticación", 'danger');
             }
