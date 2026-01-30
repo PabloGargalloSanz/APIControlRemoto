@@ -24,6 +24,7 @@ export const executeComand = async (req, res, next) => {
     res.set('Content-Type', 'application/json; charset=utf-8');
 
     try {
+        const isWin = process.platform === 'win32';
         //con docker
         //const fullHostCommand = `${HOST_BRIDGE} ${command}`;
         //const { stdout, stderr } = await execPromise(fullHostCommand, { timeout: 15000 });
@@ -49,7 +50,13 @@ export const executeComand = async (req, res, next) => {
             }
         }       
 
-        const {stdout, stderr} = await execPromise(winCommand, {   
+        let commandToExecute = command;
+
+        const finalCommand = isWin 
+        ? `chcp 65001 > nul && ${commandToExecute}` 
+        : commandToExecute;
+
+        const {stdout, stderr} = await execPromise(finalCommand, {   
             cwd:currentPath,
             timeout:10000,
             encoding:'utf8' 

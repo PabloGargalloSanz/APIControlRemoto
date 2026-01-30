@@ -68,7 +68,7 @@ function switchPage(pageId) {
 const termInput = document.getElementById('terminal-input');
 const termOutput = document.getElementById('terminal-output');
 const termWord = document.getElementById('palabra');
-let currentPath = "C:/Users/PabloGargalloSanz/Desktop/Pablo/Servidor/APIControlRemoto/backend";
+let currentPath = "";
 
 if(termInput) {
     termInput.addEventListener('keypress', async (e) => {
