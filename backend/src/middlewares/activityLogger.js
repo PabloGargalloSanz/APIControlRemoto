@@ -20,7 +20,7 @@ export const activityLogger = (req, res, next) => {
             }
             
             //si la ruta viene de la shell
-            if (rute,includes('/api/shell/execute')){
+            if (rute.includes('/api/shell/execute')){
                 logShell(userId, ip, rute, command, details, statusCode);
                 next();
 

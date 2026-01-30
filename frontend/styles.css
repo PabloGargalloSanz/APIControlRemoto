@@ -128,6 +128,12 @@ body {
 .terminal-input-row input { background: transparent; border: none; color: white; flex: 1; outline: none; font-family: monospace; }
 .prompt { font-weight: bold; color: #4f46e5; }
 
+.cuadroTexto{
+    margin: 10px;
+    color: #94a3b8;
+    font-size: 15px;
+}
+
 /* Audit Table Dark */
 .audit-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 

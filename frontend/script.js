@@ -4,7 +4,7 @@ let isBypassOps = false;
 let currentUser = "admin";
 
 // config front
-const API_URL = "http://localhost:3000/api/metrics/status"; 
+const API_URL = "http://localhost:4000"; 
 const POLLING_RATE = 10000; ///10s
 
 // Referencias DOM
@@ -19,7 +19,7 @@ loginForm.addEventListener('submit', async (e) => {
     const tokenInput = document.getElementById('token').value; 
 
     try {
-        const response = await fetch('http://localhost:3000/api/auth/login', {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password: tokenInput })
@@ -67,43 +67,67 @@ function switchPage(pageId) {
 // terminal shell///////////////////////////////////////
 const termInput = document.getElementById('terminal-input');
 const termOutput = document.getElementById('terminal-output');
+const termWord = document.getElementById('palabra');
+let currentPath = "C:/Users/PabloGargalloSanz/Desktop/Pablo/Servidor/APIControlRemoto/backend";
 
 if(termInput) {
-    termInput.addEventListener('keypress', (e) => {
+    termInput.addEventListener('keypress', async (e) => {
+
         if(e.key === 'Enter') {
             const cmd = termInput.value.trim();
+            const key = termWord?.innerText?.trim() ?? "";
             if(!cmd) return;
             
             // Mostrar comando en terminal
             const line = document.createElement('p');
-            const modeLabel = isBypassOps ? "[BYPASS]" : "[SECURE]";
-            line.innerHTML = `<span class="prompt">➜ ${modeLabel}</span> ${cmd}`;
+            line.innerHTML = `<span class="prompt">➜ ${currentPath}</span> ${cmd}`;
             termOutput.appendChild(line);
             
             // Respuesta simulada
             const resp = document.createElement('p');
             resp.style.color = "#94a3b8";
             resp.style.marginLeft = "1rem";
-            
-            if(cmd === 'help') {
-                resp.innerHTML = "Comandos: stats, reboot, clear, ls";
-            } else if(cmd === 'reboot') {
-                resp.innerText = "Reiniciando servidor... (Simulado)";
-                quickAction('Reinicio');
-            } else if(cmd === 'clear') {
-                termOutput.innerHTML = "";
-            } else {
-                resp.innerText = `Ejecutando '${cmd}'... Hecho.`;
-            }
-            
+            resp.innerText = "Procesando...";
             termOutput.appendChild(resp);
-            termOutput.scrollTop = termOutput.scrollHeight;
-            
+                                    
             addAuditLog(`SHELL: ${cmd}`, isBypassOps ? "ALERT" : "OK");
             termInput.value = "";
+
+            try {
+                const response = await fetch(`${API_URL}/api/shell/execute`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+                    },
+                    body: JSON.stringify({ command: cmd, key: key })
+                });
+
+                const data = await response.json();
+
+                if (data.cwd) {
+                    currentPath = data.cwd;
+                }
+
+                setTimeout(() => {
+                    termOutput.scrollTop = termOutput.scrollHeight;
+                }, 50);
+
+                if (response.ok) {
+                    resp.innerText = data.output || "Comando ejecutado (sin salida)";
+                } else {
+                    resp.innerText = `Error: ${data.error || "Acceso denegado"}`;
+                    resp.style.color = "#ef4444";
+                    showToast(data.error || "Fallo en la ejecución", 'danger');
+                }
+            } catch (error) {
+                showToast("Error de conexión con el servidor de autenticación", 'danger');
+            }
+
         }
     });
 }
+
 
 // logs auditoria////////////////////////////////////////
 function addAuditLog(action, status) {
@@ -131,7 +155,7 @@ function quickAction(type) {
 // actualizacion metricas dashboard///////////////////
 async function updateDashboard() {
     try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/api/metrics/status`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
