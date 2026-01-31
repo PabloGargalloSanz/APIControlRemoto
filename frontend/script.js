@@ -1,18 +1,18 @@
-// Variables de Estado
-let isBypassLogin = false;
-let isBypassOps = false;
-let currentUser = "admin";
-
 // config front
 const API_URL = "http://localhost:4000"; 
 const POLLING_RATE = 10000; ///10s
 
-// Referencias DOM
+// Variables globales
+let currentUser = localStorage.getItem('user_email') || "Desconocido";
+
+// ref DOM
 const loginScreen = document.getElementById('login-screen');
 const mainApp = document.getElementById('main-app');
 const loginForm = document.getElementById('login-form');
 
-// login////////////////////////////////
+
+// login///////////////////////
+
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('username').value;
@@ -28,14 +28,15 @@ loginForm.addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (response.ok) {
-            // guardamso token
+            // guardar token y usuario
             localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('user_email', email); // guardar email
             currentUser = email;
             
             loginScreen.classList.add('hidden');
             mainApp.classList.remove('hidden');
             
-            // Iniciamos el dashboard
+            // cargamos dashboard
             updateDashboard();
 
         } else {
@@ -46,25 +47,31 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-// logout
+// logout////////////////////
+
 function logout() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_email');
     location.reload();
 }
 
-// navegacion////////////////////////////
 function switchPage(pageId) {
-    // actualizar botones
+    // Actualizar botones
     document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`btn-${pageId}`).classList.add('active');
+    const btn = document.getElementById(`btn-${pageId}`);
+    if(btn) btn.classList.add('active');
     
-    // cambiar secciones
+    // Cambiar secciones
     document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
-    document.getElementById(`page-${pageId}`).classList.remove('hidden');    
-    document.getElementById('page-title').innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+    const page = document.getElementById(`page-${pageId}`);
+    if(page) page.classList.remove('hidden');
+    
+    const title = document.getElementById('page-title');
+    if(title) title.innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
 }
 
+// shell//////////////////////
 
-// terminal shell///////////////////////////////////////
 const termInput = document.getElementById('terminal-input');
 const termOutput = document.getElementById('terminal-output');
 const termWord = document.getElementById('palabra');
@@ -76,22 +83,23 @@ if(termInput) {
         if(e.key === 'Enter') {
             const cmd = termInput.value.trim();
             const key = termWord?.innerText?.trim() ?? "";
+            
             if(!cmd) return;
             
-            // Mostrar comando en terminal
+            // mostrar comando terminal
             const line = document.createElement('p');
-            line.innerHTML = `<span class="prompt">➜ ${currentPath}</span> ${cmd}`;
+            line.innerHTML = `<span class="prompt">➜ ${currentPath || '~'}</span> ${cmd}`;
             termOutput.appendChild(line);
-            
-            // Respuesta simulada
+            termInput.value = "";
+
+            // mensaje cara
             const resp = document.createElement('p');
             resp.style.color = "#94a3b8";
             resp.style.marginLeft = "1rem";
             resp.innerText = "Procesando...";
             termOutput.appendChild(resp);
-                                    
-            addAuditLog(`SHELL: ${cmd}`, isBypassOps ? "ALERT" : "OK");
-            termInput.value = "";
+            
+            scrollToBottom();
 
             try {
                 const response = await fetch(`${API_URL}/api/shell/execute`, {
@@ -105,40 +113,66 @@ if(termInput) {
 
                 const data = await response.json();
 
+                // actualizar path
                 if (data.cwd) {
                     currentPath = data.cwd;
                 }
 
+                
                 if (response.ok) {
+                    
                     resp.innerText = data.output || "Comando ejecutado (sin salida)";
+                    resp.style.color = "#fff"; 
+                    
+                    addAuditLog(`SHELL: ${cmd}`, "OK");
+
                 } else {
-                    resp.innerText = `Error: ${data.error || "Acceso denegado"}`;
-                    resp.style.color = "#ef4444";
+                    // error credencialees
+                    resp.innerText = `Error: ${data.error}`;
+                    resp.style.color = "#ef4444"; 
+                    
                     showToast(data.error || "Fallo en la ejecución", 'danger');
+                    addAuditLog(`SHELL: ${cmd}`, "ERROR");
                 }
-                setTimeout(() => {
-                    termOutput.scrollTo({
-                        top: termOutput.scrollHeight,
-                        behavior: 'smooth' 
-                    });
-                }, 100);
+                //scroll automatico
+                scrollToBottom();
             
             } catch (error) {
-                showToast("Error de conexión con el servidor de autenticación", 'danger');
+                resp.innerText = "Error de conexión";
+                resp.style.color = "#ef4444";
+                showToast("Comando erroneo o error de conexión con el servidor", 'danger');
+                addAuditLog(`SHELL: ${cmd}`, "COMMAND_FAIL//NETWORK_ERROR");
             }
-
         }
     });
 }
 
+function scrollToBottom() {
+    if(termOutput) {
+        setTimeout(() => {
+            termOutput.scrollTo({
+                top: termOutput.scrollHeight,
+                behavior: 'smooth' 
+            });
+        }, 100);
+    }
+}
 
-// logs auditoria////////////////////////////////////////
+// logs auditoria////////////////////
 function addAuditLog(action, status) {
     const tbody = document.getElementById('audit-logs');
+    if(!tbody) return;
+
     const now = new Date().toLocaleTimeString();
     const row = document.createElement('tr');
     
-    const badgeClass = status === 'OK' ? 'badge-ok' : 'badge-alert';
+    
+    let badgeClass = 'badge-ok'; 
+    if (status === 'ERROR' || status === 'FAIL' || status === 'COMMAND_FAIL//NETWORK_ERROR') {
+        badgeClass = 'badge-alert'; 
+    } else if (status === 'ALERT') {
+        badgeClass = 'badge-alert';
+    }
     
     row.innerHTML = `
         <td>${now}</td>
@@ -149,46 +183,49 @@ function addAuditLog(action, status) {
     tbody.prepend(row);
 }
 
-
 function quickAction(type) {
     showToast(`Acción: ${type} solicitada`);
-    addAuditLog(`ACTION: ${type.toUpperCase()}`, isBypassOps ? "ALERT" : "OK");
+    addAuditLog(`ACTION: ${type.toUpperCase()}`, "PENDING"); 
 }
 
-// actualizacion metricas dashboard///////////////////
+// dashboard////////////////
 async function updateDashboard() {
+    if(mainApp.classList.contains('hidden')) return;
+
     try {
         const response = await fetch(`${API_URL}/api/metrics/status`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
         });
+        
+        if (response.status === 401) {
+            logout();
+            return;
+        }
 
         const data = await response.json();
         const m = data.metrics;
 
-        // barras de progreso
-        
-        // cpu
+        if(!m) return;
+
+        // Actualizar barras
         updateMetric('cpu', m.cpu.val, m.cpu.percent, m.cpu.unit, 'usage');
         updateMetric('cpu-temp', m.cpuTemp.val, m.cpuTemp.percent, m.cpuTemp.unit, 'usage');
         updateMetric('cpu-carga', m.cpuCarga.val, m.cpuCarga.percent, m.cpuCarga.unit, 'usage');
 
-        // ram
         updateMetric('ram', m.ram.val, m.ram.percent, m.ram.unit, 'available');
         updateMetric('ram-uso', m.ramUso.val, m.ramUso.percent, m.ramUso.unit, 'usage');
         updateMetric('swap', m.swapUso.val, m.swapUso.percent, m.swapUso.unit, 'usage');
 
-        // disco
         updateMetric('disk', m.discoUso.val, m.discoUso.percent, m.discoUso.unit, 'usage');
         updateMetric('disk-read', m.diskRead.val, m.diskRead.percent, m.diskRead.unit, 'usage');
         updateMetric('disk-write', m.diskWrite.val, m.diskWrite.percent, m.diskWrite.unit, 'usage');
 
-        // red
         updateMetric('red-in', m.netIn.val, m.netIn.percent, m.netIn.unit, 'usage');
         updateMetric('red-out', m.netOut.val, m.netOut.percent, m.netOut.unit, 'usage');
 
-        // alertas
+        // Alertas del sistema
         if (data.alerts && data.alerts.length > 0) {
             data.alerts.forEach((alert, index) => {
                 addAuditLog(alert.message, "ALERT");
@@ -203,7 +240,6 @@ async function updateDashboard() {
     }
 }
 
-// dar colores y unidades a las barras
 function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
     const bar = document.getElementById(`${id}-bar`);
     const text = document.getElementById(`${id}-text`);
@@ -212,29 +248,28 @@ function updateMetric(id, value, percent, unit = '%', mode = 'usage') {
         bar.style.width = `${percent}%`;
         text.innerText = `${value}${unit}`;
 
-        // cambio de color
+        
+        let color = "#00C851"; 
+        
         if (mode === 'usage') {
-            if (percent > 90) bar.style.backgroundColor = "#ff4444";
-            else if (percent > 75) bar.style.backgroundColor = "#ffbb33";
-            else bar.style.backgroundColor = "#00C851";
-
+            if (percent > 90) color = "#ff4444"; 
+            else if (percent > 75) color = "#ffbb33"; 
         } else if (mode === 'available') {
-            if (percent < 10) bar.style.backgroundColor = "#ff4444"; 
-            else if (percent < 25) bar.style.backgroundColor = "#ffbb33"; 
-            else bar.style.backgroundColor = "#00C851"; 
+            if (percent < 10) color = "#ff4444";
+            else if (percent < 25) color = "#ffbb33";
         }
+        bar.style.backgroundColor = color;
     }
 }
 
-
-// popups //////////////////////////////////
+//Popup
 function showToast(message, level = 'info') {
     const container = document.getElementById("toast-container");
     if (!container) return;
 
     const toast = document.createElement("div");
-    
     const activeLevel = level.toLowerCase();
+    
     toast.className = `toast ${activeLevel}`;
     toast.innerText = message;
 
@@ -242,21 +277,9 @@ function showToast(message, level = 'info') {
 
     setTimeout(() => {
         toast.classList.add('fade-out');
-        
-        setTimeout(() => {
-            toast.remove();
-        }, 500); 
-    }, 4000); //  visible 4 segundos
+        setTimeout(() => toast.remove(), 500); 
+    }, 4000);
 }
 
-/*
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.innerText = msg;
-    toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 3000);
-}
-*/
-
-// Iniciar el bucle de consulta////////////////////////////////////////////
+// inicio
 setInterval(updateDashboard, POLLING_RATE);

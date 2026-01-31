@@ -13,8 +13,7 @@ const newLog = async (userId, action, ip, method, rute, command, details, status
     
     
     } catch (dbErr) {
-        // Usamos console.error para no perder el rastro si falla la DB
-        console.error("❌ Error real en la query de logs:", dbErr.message);
+        console.error(" Error real en la query de logs:", dbErr.message);
     }
 }
 
@@ -28,10 +27,14 @@ export const logAll = (userId, action, ip, method = null, rute = null, details, 
 
 //Servicio log shell
 export const logShell = (userId, ip, route, command, details, statusCode) => {
-    newLog(userId, 'SHELL', ip, 'EXEC', route, command, details, statusCode);
+    newLog(userId, 'SHELL', ip, 'EXEC', route, command, 'OK: ' + details, statusCode);
 }
 
 //Servicio log error
 export const logError = (userId, action, ip, method, rute, details, statusCode) => {
     newLog(userId, action, ip, method, rute, null, 'ERROR: ' + details, statusCode);
+}
+//Servicio log error
+export const logErrorShell = (userId, action, ip, method, rute,command, details, statusCode) => {
+    newLog(userId, action, ip, method, rute, command, 'ERROR: ' + details, statusCode);
 }

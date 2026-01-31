@@ -6,7 +6,7 @@ import { globalErrorHandler } from './src/middlewares/errorHandler.js';
 import { activityLogger } from './src/middlewares/activityLogger.js';
 import cors from 'cors'; 
 
-import path from 'path';                // NUEVO
+import path from 'path';               
 
 const app= express();
 

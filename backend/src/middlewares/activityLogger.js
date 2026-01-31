@@ -1,34 +1,42 @@
 import { logAll, logShell } from '../services/log.service.js';
 
 export const activityLogger = (req, res, next) => {
+    //interceptar res.json
+    const originalJson = res.json;
+    res.json = function (body) {
+        res.locals.responseBody = body;
+        return originalJson.call(this, body);
+    };
+
     res.on('finish', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-            const ip = req.ip || '0.0.0.0';
-            let userId = req.userId || null;
-            const rute = req.originalUrl;
-            const method = req.method;
-            let command= req.command;
-            let action = req.action;
-            const details = 'Acción realizada con exito';
-            const statusCode = res.statusCode;
-
-            if(!action){
-                if(rute.includes('/api/metrics/status')){
-                    action = 'MONITOREO_SISTEMA';
-                    userId= '1';
-                }  
-            }
             
-            //si la ruta viene de la shell
-            if (rute.includes('/api/shell/execute')){
-                logShell(userId, ip, rute, command, details, statusCode);
-                next();
+            const ip = req.ip || '0.0.0.0';
+            const method = req.method;
+            const route = req.originalUrl; 
+            const statusCode = res.statusCode;
+            let userId = req.userId;
 
-            } else{
+            if (route.includes('/api/shell/execute')) {
+                const command = req.body.command; 
 
-                logAll(userId, action, ip, method, rute, details, statusCode);
+                const details = 'Acción realizada con exito';
+                logShell(userId, ip, route, command, details, statusCode);
+            
+            } else {
+                let action = req.action || `HTTP_${method}`;
+                let finalUserId = userId;
+                if(route.includes('/api/metrics/status') && !req.action){
+                    action = 'MONITOREO_SISTEMA';
+                    finalUserId = '1';
+
+                }else{
+                    const details = 'Acción realizada con éxito';
+                    logAll(finalUserId, action, ip, method, route, details, statusCode);
+                }
             }
-        } 
+        }
     });
-    next();
+
+    next(); 
 };
