@@ -1,0 +1,72 @@
+services:
+  # db
+  db:
+    image: postgres:15
+    container_name: remote_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: control_remoto
+    volumes:
+      - pg_data_remote:/var/lib/postgresql/data
+      - ./backend/src/db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    networks:
+      - app_network
+
+  # backend (aPI)
+  backend:
+    build: ./backend
+    container_name: remote_api
+    restart: always
+    privileged: true  # acceso al hardware
+    environment:
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - PORT=${PORT}
+      - SI_FS_PATH=/host 
+    volumes:
+      - /proc:/host/proc:ro         #  CPU/RAM 
+      - /sys:/host/sys:ro           # sensores/temperatura
+      - /var/run/dbus:/var/run/dbus # reiniciar/apagar el host
+      - /run/systemd:/run/systemd   # Acceso a systemd
+    networks:
+      - app_network
+
+  # jobs
+  jobs:
+    build: ./backend
+    container_name: remote_worker
+    command: ["node", "src/jobs.js"] # ejecuta script jobs
+    restart: always
+    privileged: true
+    environment:
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SI_FS_PATH=/host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    networks:
+      - app_network
+
+  # Frontend (nginx)
+  frontend:
+    build: ./frontend
+    container_name: remote_frontend
+    restart: always
+    ports:
+      - "8080:80"  
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+volumes:
+  pg_data_remote:
+
+networks:
+  app_network:
+    driver: bridge

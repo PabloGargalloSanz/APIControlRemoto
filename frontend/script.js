@@ -1,5 +1,5 @@
 // config front
-const API_URL = "http://localhost:4000"; 
+const API_URL = ""; 
 const POLLING_RATE = 10000; ///10s
 
 // Variables globales
