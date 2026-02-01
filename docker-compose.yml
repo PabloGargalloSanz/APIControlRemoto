@@ -1,52 +1,71 @@
 services:
-  # db
+  # Base de datos
   db:
     image: postgres:15
     container_name: remote_db
     restart: always
+
+    # cargamos .env
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: control_remoto
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:${DB_PORT:-5432}" 
     volumes:
       - pg_data_remote:/var/lib/postgresql/data
       - ./backend/src/db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
     networks:
       - app_network
 
-  # backend (aPI)
+  # Backend (API)
   backend:
     build: ./backend
     container_name: remote_api
     restart: always
-    privileged: true  # acceso al hardware
+    privileged: true
+    
+    env_file:
+      - .env
+    
     environment:
       - DB_HOST=db
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - PORT=${PORT}
-      - SI_FS_PATH=/host 
+      - PORT=3000
+      - SI_FS_PATH=/host
+      
+    command: ["npx", "nodemon", "app.js"]
     volumes:
-      - /proc:/host/proc:ro         #  CPU/RAM 
-      - /sys:/host/sys:ro           # sensores/temperatura
-      - /var/run/dbus:/var/run/dbus # reiniciar/apagar el host
-      - /run/systemd:/run/systemd   # Acceso a systemd
+      - ./backend:/app
+      - /app/node_modules
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/dbus:/var/run/dbus
+      - /run/systemd:/run/systemd
+    ports:
+      - "3000:3000"
     networks:
       - app_network
 
-  # jobs
+  # Jobs 
   jobs:
     build: ./backend
     container_name: remote_worker
-    command: ["node", "src/jobs.js"] # ejecuta script jobs
+    command: ["npx", "nodemon", "src/jobs.js"]
     restart: always
     privileged: true
+    
+    env_file:
+      - .env
+      
     environment:
       - DB_HOST=db
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
       - SI_FS_PATH=/host
+      
     volumes:
+      - ./backend:/app
+      - /app/node_modules
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
     networks:
@@ -58,7 +77,10 @@ services:
     container_name: remote_frontend
     restart: always
     ports:
-      - "8080:80"  
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - backend
     networks:
@@ -66,6 +88,7 @@ services:
 
 volumes:
   pg_data_remote:
+    external: false
 
 networks:
   app_network:

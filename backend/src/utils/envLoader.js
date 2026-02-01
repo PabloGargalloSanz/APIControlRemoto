@@ -4,58 +4,41 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const ENV_PATH = path.resolve(__dirname, "../../.env");
+
+const dockerEnvPath = path.resolve(__dirname, "../../.env"); // Ruta Docker
+const localEnvPath = path.resolve(__dirname, "../../../.env"); // Ruta Local
+const ENV_PATH = fs.existsSync(dockerEnvPath) ? dockerEnvPath : localEnvPath;
 
 const REQUIRED_ENV_VARS = [
-    "PORT",
-    "DB_USER",
-    "DB_HOST",
-    "DB_PASSWORD",
-    "DB_PORT"
+    "PORT", "DB_USER", "DB_HOST", "DB_PASSWORD", "DB_PORT"
 ];
 
-//leer y cargar el archivo .env 
 function loadEnvFile() {
     if (fs.existsSync(ENV_PATH)) {
+        console.log(` Cargando variables desde: ${ENV_PATH}`);
         const content = fs.readFileSync(ENV_PATH, "utf-8");
         content.split("\n").forEach((line) => {
             const cleanLine = line.replace(/\r/g, "").trim();
-
             if (cleanLine && !cleanLine.startsWith("#")) {
                 const [key, ...valueParts] = cleanLine.split("=");
-                if (key) {
+                if (key && !process.env[key.trim()]) { 
                     let value = valueParts.join("=").trim();
-                    
-                    // NUEVO: Eliminar comillas simples o dobles al principio y al final
-                    value = value.replace(/^['"]|['"]$/g, "");
-                    
+                    value = value.replace(/^['"]|['"]$/g, ""); 
                     process.env[key.trim()] = value;
                 }
             }
         });
+    } else {
+        console.log(" No se encontró archivo .env local, usando variables de entorno del sistema.");
     }
 }
 
-// rear el archivo si no existe
-function validateEnvFile() {
-    if(!fs.existsSync(ENV_PATH) || fs.statSync(ENV_PATH).size === 0) {
-        console.log("Creando el archivo .env en:", ENV_PATH);
-        let str = REQUIRED_ENV_VARS.map(v => `${v}=`).join('\n');
-        fs.writeFileSync(ENV_PATH, str);
-    }
-}
 
-function validateEnvVars() {
-    return REQUIRED_ENV_VARS.filter((varName) => !process.env[varName]);
-}
+loadEnvFile();
 
-
-validateEnvFile();
-loadEnvFile(); //  cargamos los datos en process.env
-
-const missingVars = validateEnvVars();
+const missingVars = REQUIRED_ENV_VARS.filter((varName) => !process.env[varName]);
 missingVars.forEach((missingVar) => {
-    console.warn(`Warning: Missing required environment variable: ${missingVar}`);
+    console.warn(`⚠️ Warning: Missing required environment variable: ${missingVar}`);
 });
 
 let ENV = () => {
