@@ -45,6 +45,7 @@
                 <button onclick="switchPage('dashboard')" class="menu-item active" id="btn-dashboard">Dashboard</button>
                 <button onclick="switchPage('terminal')" class="menu-item" id="btn-terminal">Terminal Shell</button>
                 <button onclick="switchPage('audit')" class="menu-item" id="btn-audit">Logs auditoria</button>
+                <button onclick="switchPage('audit-metrics')" class="menu-item" id="btn-audit-metrics">Logs metricas</button>
             </nav>
 
             <div class="sidebar-footer">
@@ -153,6 +154,31 @@
                             </thead>
                             <tbody id="audit-logs">
                                 <!-- Logs dinámicos aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="page-audit-metrics" class="page hidden">
+                    <div class="card no-padding">
+                        <table class="audit-metrics-table">
+                            <thead>
+                                <tr>
+                                    <th>CPU_uso</th>
+                                    <th>CPU_temp</th>
+                                    <th>CPU_carga</th>
+                                    <th>RAM_uso</th>
+                                    <th>RAM_disponible</th>
+                                    <th>SWAP</th>
+                                    <th>DISK_uso</th>
+                                    <th>DISK_lectura</th>
+                                    <th>DISK_escritura</th>
+                                    <th>NET_in</th>
+                                    <th>NET_out</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-metrics-logs">
+                               
                             </tbody>
                         </table>
                     </div>

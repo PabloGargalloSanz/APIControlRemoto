@@ -9,6 +9,7 @@ let currentUser = localStorage.getItem('user_email') || "Desconocido";
 const loginScreen = document.getElementById('login-screen');
 const mainApp = document.getElementById('main-app');
 const loginForm = document.getElementById('login-form');
+const metrics = document.getElementById('btn-audit-metrics');
 
 
 // login///////////////////////
@@ -186,6 +187,58 @@ function addAuditLog(action, status) {
 function quickAction(type) {
     showToast(`Acción: ${type} solicitada`);
     addAuditLog(`ACTION: ${type.toUpperCase()}`, "PENDING"); 
+}
+
+// Log metricas sistema///////////////////////////
+metrics.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+
+    try {
+        const response = await fetch(`${API_URL}/api/metrics/status`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            addAuditMetricsLog(data);
+
+        } else {
+            showToast(data.error || "Error al obtener datos", 'danger');
+        }
+    } catch (error) {
+        showToast("Error de conexión con el servidor", 'danger');
+    }
+});
+
+function addAuditMetricsLog(response){
+    const tbody = document.getElementById('audit-metrics-log');
+    if(!tbody){return};
+
+    const row = document.createElement('tr');
+
+    for (let i = 0; i < response.length; i++){
+        row.innerHTML= `
+        
+            <td>response[i].cpu</td>
+            <td>response[i].cpuTemp</td>
+            <td>response[i].cpuCarga</td>
+            <td>response[i].ram</td>
+            <td>response[i].swapUso</td>
+            <td>response[i].discoUso</td>
+            <td>response[i].diskRead</td>
+            <td>response[i].diskWrite</td>
+            <td>response[i].netIn</td>
+            <td>response[i].netOut</td>
+        `
+    }
+
+
+
+
+
 }
 
 // dashboard////////////////
