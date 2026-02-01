@@ -26,6 +26,7 @@ services:
     container_name: remote_api
     restart: always
     privileged: true
+    pid: "host"
     
     env_file:
       - .env

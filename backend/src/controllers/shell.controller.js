@@ -1,71 +1,77 @@
-import {exec} from 'node:child_process';
-import {promisify} from 'node:util';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import path from 'node:path';
-import fs from 'node:fs';
 
 const execPromise = promisify(exec);
-let currentPath = process.cwd();
 
-//con docker para el sistema y no el contenedor
+let currentPath = '/'; 
+
+// puente para ejecutar comandos en el Host
 const HOST_BRIDGE = 'nsenter --target 1 --mount --uts --ipc --net';
 
 export const executeComand = async (req, res, next) => { 
-    const {command, key} = req.body;
+    const { command, key } = req.body;
     const SECURE = process.env.FIRST_PASS;
 
-    if(!key || SECURE !== key){
-        const err = new Error('Credenciales erroneas');
-        err.action = 'SHELL_PASS_FAIL';
-        err.status = 403;
-        return next(err);
+    // comprobacion clave
+    if (!key || SECURE !== key) {
+        return res.status(403).json({ 
+            error: 'Credenciales erróneas',
+            action: 'SHELL_PASS_FAIL' 
+        });
     }
 
+    
     res.set('Content-Type', 'application/json; charset=utf-8');
 
     try {
-        //con docker
-        //const fullHostCommand = `${HOST_BRIDGE} ${command}`;
-        //const { stdout, stderr } = await execPromise(fullHostCommand, { timeout: 15000 }); 
+        const trimmedCommand = command.trim();
 
-        const isWin = process.platform === 'win32';
-        
-        // manejo cd
-        if (command.startsWith('cd ')) {
-            const targetDir = command.substring(3).trim();
-            const newPath = path.resolve(currentPath, targetDir);
+        //manejo de comandos "cd"
+        if (trimmedCommand === 'cd' || trimmedCommand.startsWith('cd ')) {
+            let targetDir = trimmedCommand === 'cd' ? '/' : trimmedCommand.substring(3).trim();
+            
+            // resolvemos la ruta usando path.posix 
+            const newPath = path.posix.resolve(currentPath, targetDir);
 
-            if (fs.existsSync(newPath) && fs.lstatSync(newPath).isDirectory()) {
+            // validacion  del directorio 
+            const checkDirCmd = `${HOST_BRIDGE} [ -d "${newPath}" ]`;
+            
+            try {
+                await execPromise(checkDirCmd);
                 currentPath = newPath;
                 return res.status(200).json({ 
                     output: `Cambiado a: ${currentPath}`, 
                     cwd: currentPath
                 });
-            } else {
+            } catch (e) {
                 return res.status(400).json({ 
-                    error: `La ruta no existe: ${targetDir}`, 
+                    error: `La ruta no existe en el host: ${newPath}`,
                     cwd: currentPath 
                 });
             }
-        }       
+        }
 
-        let commandToExecute = command;
-        const finalCommand = isWin 
-        ? `chcp 65001 > nul && ${commandToExecute}` 
-        : commandToExecute;
+        
+        // Forzamos un subshell 'sh -c' y ocurran en el Host
+        const commandToExecute = `${HOST_BRIDGE} sh -c "cd '${currentPath}' && ${trimmedCommand}"`;
 
-        const {stdout, stderr} = await execPromise(finalCommand, {   
-            cwd: currentPath,
-            timeout: 10000,
-            encoding: 'utf8' 
-        });
+        const { stdout, stderr } = await execPromise(commandToExecute, { 
+            timeout: 20000, 
+            encoding: 'utf8'
+        }); 
 
+        
         res.status(200).json({ 
-            output: stdout || stderr 
+            output: stdout || stderr || "Comando ejecutado con éxito (sin salida)",
+            cwd: currentPath
         });
         
-    } catch(error) {
-        error.status = 500;
-        error.action = 'SHELL_BIG_ERROR';
-        next(error); 
+    } catch (error) {
+        res.status(400).json({ 
+            error: error.stderr || error.message,
+            action: 'SHELL_EXEC_ERROR',
+            cwd: currentPath
+        });
     }
-}
+};
