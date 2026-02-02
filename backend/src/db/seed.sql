@@ -83,3 +83,5 @@ SELECT
     fecha_creado::TIME(0) AS hora
 FROM avisos
 ORDER BY fecha_creado DESC;
+
+CREATE INDEX idx_logs_detalles ON logs (detalles);

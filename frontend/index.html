@@ -13,8 +13,8 @@
         <div class="login-card">
             <div class="login-header">
                 <div class="icon-circle">🔒</div>
-                <h1>RemoteOps</h1>
-                <p>Control de Servidor Seguro</p>
+                <h1>Remote</h1>
+                <p>Inicia sesión</p>
             </div>
             
             <form id="login-form">
@@ -44,7 +44,10 @@
             <nav class="menu">
                 <button onclick="switchPage('dashboard')" class="menu-item active" id="btn-dashboard">Dashboard</button>
                 <button onclick="switchPage('terminal')" class="menu-item" id="btn-terminal">Terminal Shell</button>
-                <button onclick="switchPage('audit')" class="menu-item" id="btn-audit">Logs auditoria</button>
+                <button onclick="switchPage('audit')" class="menu-item" id="btn-audit">Logs en Sesión</button>
+                <button onclick="switchPage('audit-metrics')" class="menu-item" id="btn-audit-metrics">Logs Metricas Warnings</button>
+                <button onclick="switchPage('audit-shell')" class="menu-item" id="btn-audit-shell">Logs Shell</button>
+                <button onclick="switchPage('audit-errores')" class="menu-item" id="btn-audit-errores">Logs Errores</button>
             </nav>
 
             <div class="sidebar-footer">
@@ -126,10 +129,11 @@
 
                 <!-- Terminal Page -->
                 <section id="page-terminal" class="page hidden">
+                    <div class="cuadroTexto" id="palabra" contenteditable="true" placeholder=" " ></div>
                     <div class="terminal">
                         <div class="terminal-header">bash — root@remote-server</div>
                         <div id="terminal-output" class="terminal-body">
-                            <p class="text-dim">Escriba 'help' para ver los comandos...</p>
+                            <p class="text-dim"></p>
                         </div>
                         <div class="terminal-input-row">
                             <span class="prompt">➜</span>
@@ -156,6 +160,65 @@
                         </table>
                     </div>
                 </section>
+
+                <section id="page-audit-errores" class="page hidden">
+                    <div class="card no-padding">
+                        <table class="audit-errores-table">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Ip Origen</th>
+                                    <th>Ruta</th>
+                                    <th>Codigo</th>
+                                    <th>Detalles</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-errores-logs">
+                               
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="page-audit-metrics" class="page hidden">
+                    <div class="card no-padding">
+                        <table class="audit-metrics-table">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Componente</th>
+                                    <th>Tipo de aviso</th>
+                                    <th>Valor</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-metrics-logs">
+                               
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="page-audit-shell" class="page hidden">
+                    <div class="card no-padding">
+                        <table class="audit-shell-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>IP Origen</th>
+                                    <th>Comando</th>
+                                    <th>Status</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-shell-logs">
+                               
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
             </div>
         </main>
     </div>

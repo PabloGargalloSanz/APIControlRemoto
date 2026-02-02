@@ -65,7 +65,7 @@ export const getSystemMetrics = async () => {
 
         /////////// DISCO 
         // SERVIDOR 
-        /*
+        
         const mainDisk = disk.find(d => d.mount === '/') || disk[0];
         const discoUso = mainDisk.use;
 
@@ -82,19 +82,7 @@ export const getSystemMetrics = async () => {
         const discoWrite = lastDisk.w > 0 ? (((sectorsW - lastDisk.w) * 512) / diffTiempo / MB).toFixed(2) : "0.00";
         
         lastDisk = { r: sectorsR, w: sectorsW, t: ahora };
-        //////////////
-*/
-        //////////////////////////////////////
-       //ORDENADOR CLASE
-        const discoUso = disk[0] ? disk[0].use : 0;
-
-        // MB/s lectura
-        const discoRead = dIO?.rIO_sec ? (dIO.rIO_sec / MB) : 0;
-
-        // MB/s escritura
-        const discoWrite = dIO?.wIO_sec ? (dIO.wIO_sec / MB) : 0; 
-        
-        /////////////////////////////////////
+       
 
         ////////// RED Bytes recibidos (rx) y transmitidos (tx)
         const netIn = (net[0] && net[0].rx_bytes) ? (net[0].rx_bytes / MB).toFixed(2) : 0;

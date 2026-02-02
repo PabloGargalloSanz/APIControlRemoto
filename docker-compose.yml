@@ -1,0 +1,96 @@
+services:
+  # Base de datos
+  db:
+    image: postgres:15
+    container_name: remote_db
+    restart: always
+
+    # cargamos .env
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:${DB_PORT:-5432}" 
+    volumes:
+      - pg_data_remote:/var/lib/postgresql/data
+      - ./backend/src/db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    networks:
+      - app_network
+
+  # Backend (API)
+  backend:
+    build: ./backend
+    container_name: remote_api
+    restart: always
+    privileged: true
+    pid: "host"
+    
+    env_file:
+      - .env
+    
+    environment:
+      - DB_HOST=db
+      - PORT=3000
+      - SI_FS_PATH=/host
+      
+    command: ["npx", "nodemon", "app.js"]
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/dbus:/var/run/dbus
+      - /run/systemd:/run/systemd
+    ports:
+      - "3000:3000"
+    networks:
+      - app_network
+
+  # Jobs 
+  jobs:
+    build: ./backend
+    container_name: remote_worker
+    command: ["npx", "nodemon", "src/jobs.js"]
+    restart: always
+    privileged: true
+    
+    env_file:
+      - .env
+      
+    environment:
+      - DB_HOST=db
+      - SI_FS_PATH=/host
+      
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    networks:
+      - app_network
+
+  # Frontend (nginx)
+  frontend:
+    build: ./frontend
+    container_name: remote_frontend
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+volumes:
+  pg_data_remote:
+    external: false
+
+networks:
+  app_network:
+    driver: bridge

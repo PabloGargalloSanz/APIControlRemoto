@@ -1,23 +1,18 @@
 import {createUser, authenticateUser} from '../services/auth.service.js';
 import {generateToken} from '../utils/token.util.js';
 
-//nuevo usuario
 export const register = async (req, res, next) => {
     const { email, password, role } = req.body;   
-    
-    /////////////////////////////////////////////////////
-    //Quitar antes de finalizar
-    /////////////////////////////////////////////////////
     const rolType = role ? role : 'viewer';
 
     try {
         const newUser =  await createUser (email, password, rolType);
-        req.action = 'REGISTER_SUCCESS';
+        
+        req.action = 'REGISTER_SUCCESS'; 
+        
         res.status(201).json(newUser);
 
     } catch (error) {
-        console.error('Error registering user:', error);
-
         if (error.code === '23505') {
             error.status = 409;
             error.message = "El email ya está registrado";
@@ -27,7 +22,6 @@ export const register = async (req, res, next) => {
     }   
 };
 
-//autentificar usuario
 export const login = async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -37,17 +31,13 @@ export const login = async (req, res, next) => {
         if (user) {
             const token = generateToken(user);
 
-            // guardo id en req para uso posterior
-            req.userId = user.id;
-            req.action = 'LOGIN_SUCCES';
+            req.userId = user.id; 
+            req.action = 'LOGIN_SUCCESS';
 
             res.status(200).json({
                 message: "Login exitoso",
                 token: token,
-                user: {
-                    id: user.id,
-                    email: user.email
-                }
+                user: { id: user.id, email: user.email }
             });
 
         } else {
@@ -62,5 +52,4 @@ export const login = async (req, res, next) => {
         error.action = 'AUTH_LOGIN_BIG_FAIL';
         next(error);
     }
-
 };
