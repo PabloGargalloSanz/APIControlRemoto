@@ -44,8 +44,10 @@
             <nav class="menu">
                 <button onclick="switchPage('dashboard')" class="menu-item active" id="btn-dashboard">Dashboard</button>
                 <button onclick="switchPage('terminal')" class="menu-item" id="btn-terminal">Terminal Shell</button>
-                <button onclick="switchPage('audit')" class="menu-item" id="btn-audit">Logs auditoria</button>
-                <button onclick="switchPage('audit-metrics')" class="menu-item" id="btn-audit-metrics">Logs metricas</button>
+                <button onclick="switchPage('audit')" class="menu-item" id="btn-audit">Logs en Sesión</button>
+                <button onclick="switchPage('audit-metrics')" class="menu-item" id="btn-audit-metrics">Logs Metricas Warnings</button>
+                <button onclick="switchPage('audit-shell')" class="menu-item" id="btn-audit-shell">Logs Shell</button>
+                <button onclick="switchPage('audit-errores')" class="menu-item" id="btn-audit-errores">Logs Errores</button>
             </nav>
 
             <div class="sidebar-footer">
@@ -159,6 +161,26 @@
                     </div>
                 </section>
 
+                <section id="page-audit-errores" class="page hidden">
+                    <div class="card no-padding">
+                        <table class="audit-errores-table">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Ip Origen</th>
+                                    <th>Ruta</th>
+                                    <th>Codigo</th>
+                                    <th>Detalles</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-errores-logs">
+                               
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
                 <section id="page-audit-metrics" class="page hidden">
                     <div class="card no-padding">
                         <table class="audit-metrics-table">
@@ -177,6 +199,26 @@
                         </table>
                     </div>
                 </section>
+
+                <section id="page-audit-shell" class="page hidden">
+                    <div class="card no-padding">
+                        <table class="audit-shell-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>IP Origen</th>
+                                    <th>Comando</th>
+                                    <th>Status</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-shell-logs">
+                               
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
             </div>
         </main>
     </div>

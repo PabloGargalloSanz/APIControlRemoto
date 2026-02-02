@@ -10,6 +10,8 @@ const loginScreen = document.getElementById('login-screen');
 const mainApp = document.getElementById('main-app');
 const loginForm = document.getElementById('login-form');
 const metrics = document.getElementById('btn-audit-metrics');
+const erroresLog = document.getElementById('btn-audit-errores');
+const shell = document.getElementById('btn-audit-shell');
 
 
 // login///////////////////////
@@ -126,6 +128,7 @@ if(termInput) {
                     resp.style.color = "#fff"; 
                     
                     addAuditLog(`SHELL: ${cmd}`, "OK");
+                    await loadShellLogs();
 
                 } else {
                     // error credencialees
@@ -190,20 +193,25 @@ function quickAction(type) {
 }
 
 // Log metricas sistema///////////////////////////
-metrics.addEventListener('submit', async (e) => {
+metrics.addEventListener('click', async (e) => {
     e.preventDefault();
-    
+    loadLogMetricas();
+});
 
+async function loadLogMetricas(){
     try {
-        const response = await fetch(`${API_URL}/api/metrics/status`, {
+        const response = await fetch(`${API_URL}/api/metrics/warning`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            addAuditMetricsLog(data);
+            addAuditMetricsLog(data.data);
 
         } else {
             showToast(data.error || "Error al obtener datos", 'danger');
@@ -211,34 +219,125 @@ metrics.addEventListener('submit', async (e) => {
     } catch (error) {
         showToast("Error de conexión con el servidor", 'danger');
     }
+}
+
+// Log errores///////////////////////////
+erroresLog.addEventListener('click', async (e) => {
+    e.preventDefault();
+    loadErrores();
 });
 
+async function loadErrores(){
+    try {
+        const response = await fetch(`${API_URL}/api/log/error`, {
+            method: 'GET',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            addAuditErroresLog(data.data);
+
+        } else {
+            showToast(data.error || "Error al obtener datos", 'danger');
+        }
+    } catch (error) {
+        showToast("Error de conexión con el servidor", 'danger');
+    }
+}
+
+// Log shell///////////////////////////
+shell.addEventListener('click', async (e) => {
+    e.preventDefault();
+    loadShellLogs();
+});
+
+async function loadShellLogs() {
+    try {
+        const response = await fetch(`${API_URL}/api/shell/logs`, {
+            method: 'GET',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            addAuditShellLog(data.data);
+
+        } else {
+            showToast(data.error || "Error al obtener datos", 'danger');
+        }
+    } catch (error) {
+        showToast("Error de conexión con el servidor", 'danger');
+    }
+}
+
 function addAuditMetricsLog(response){
-    const tbody = document.getElementById('audit-metrics-log');
+    const tbody = document.getElementById('audit-metrics-logs');
     if(!tbody){return};
 
-    const row = document.createElement('tr');
+    tbody.innerHTML = '';
 
-    for (let i = 0; i < response.length; i++){
-        row.innerHTML= `
+    response.forEach(log => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
         
-            <td>response[i].cpu</td>
-            <td>response[i].cpuTemp</td>
-            <td>response[i].cpuCarga</td>
-            <td>response[i].ram</td>
-            <td>response[i].swapUso</td>
-            <td>response[i].discoUso</td>
-            <td>response[i].diskRead</td>
-            <td>response[i].diskWrite</td>
-            <td>response[i].netIn</td>
-            <td>response[i].netOut</td>
-        `
-    }
+            <td>${log.id}</td>
+            <td>${log.componente}</td>
+            <td>${log.tipo}</td>
+            <td>${log.valor}</td>
+            <td>${log.fecha_creado}</td>
+        `;
+        tbody.appendChild(row); 
+    });
+}
 
+//Relleno tabla erroes
+function addAuditErroresLog(response){
+    const tbody = document.getElementById('audit-errores-logs');
+    if(!tbody){return};
 
+    tbody.innerHTML = '';
 
+    response.forEach(log => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${log.id}</td>
+            <td>${log.ip_origen}</td>
+            <td>${log.ruta}</td>
+            <td><span class="badge ${log.status_codigo >= 500 ? 'badge-alert' : 'badge-ok'}">${log.status_codigo}</span></td>
+            <td>${log.detalles}</td>
+            <td>${log.fecha_creado}</td>
+        `;
+        tbody.appendChild(row); 
+    });
+}
 
+function addAuditShellLog(response){
+    const tbody = document.getElementById('audit-shell-logs');
+    if(!tbody){return};
 
+    tbody.innerHTML = '';
+
+    response.forEach(log => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+        
+            <td>${log.id}</td>
+            <td>${log.ip_origen}</td>
+            <td>${log.comando_ejecutado}</td>
+            <td>${log.status_codigo}</td>
+            <td>${log.fecha_creado}</td>
+        `;
+        tbody.appendChild(row); 
+    });
 }
 
 // dashboard////////////////
@@ -335,4 +434,23 @@ function showToast(message, level = 'info') {
 }
 
 // inicio
-setInterval(updateDashboard, POLLING_RATE);
+setInterval(() => {
+    updateDashboard();
+
+    const pageShell = document.getElementById('page-audit-shell');
+    const pageMetrics = document.getElementById('page-audit-metrics');
+    const pageErrors = document.getElementById('page-audit-errores');
+
+    if (pageShell && !pageShell.classList.contains('hidden')) {
+        loadShellLogs();
+    }
+
+    if (pageMetrics && !pageMetrics.classList.contains('hidden')) {
+        loadLogMetricas();
+    }
+
+    if (pageErrors && !pageErrors.classList.contains('hidden')) {
+        loadErrores();
+    }
+
+}, POLLING_RATE);

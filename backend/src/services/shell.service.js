@@ -7,7 +7,7 @@ export const getLogShellService = async() =>{
         FROM logs 
         WHERE metodo = 'EXEC' 
         ORDER BY id DESC 
-        LIMIT 100`
+        LIMIT 50`
     );
     return result.rows;
 }

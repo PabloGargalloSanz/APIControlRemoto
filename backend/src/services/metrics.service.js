@@ -6,7 +6,7 @@ export const getLogWarningMetricasService = async() =>{
         `SELECT *  
         FROM avisos
         ORDER BY id DESC 
-        limit 100`
+        LIMIT 50`
     );
     return result.rows;
 }

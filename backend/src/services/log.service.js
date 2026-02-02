@@ -46,7 +46,7 @@ export const getLogErrorService = async() =>{
         FROM logs
         WHERE detalles LIKE 'ERROR:%' 
         ORDER BY id DESC 
-        limit 100`
+        LIMIT 50`
     );
     return result.rows;
 }

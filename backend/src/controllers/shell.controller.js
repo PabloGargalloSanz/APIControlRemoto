@@ -22,7 +22,6 @@ export const executeComand = async (req, res, next) => {
         });
     }
 
-    
     res.set('Content-Type', 'application/json; charset=utf-8');
 
     try {

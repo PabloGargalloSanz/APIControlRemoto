@@ -5,5 +5,5 @@ import {verifyToken} from '../middlewares/jwt.middleware.js';
 const router = Router();
 
 router.post('/execute', verifyToken, executeComand);
-router.get('/execute', getLogShell);
+router.get('/logs', getLogShell);
 export default router;
