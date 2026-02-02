@@ -1,6 +1,7 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
+import { getLogShellService } from '../services/shell.service.js';
 
 const execPromise = promisify(exec);
 
@@ -75,3 +76,18 @@ export const executeComand = async (req, res, next) => {
         });
     }
 };
+
+export const getLogShell = async(req, res) =>{
+    try {
+        const logs = await getLogShellService();
+
+        return res.status(200).json({
+            data: logs
+        });
+    } catch(error){
+        return res.status(400).json({
+            message: 'Error al obtener logs del servidor',
+            error: error.message
+        });
+    }
+}

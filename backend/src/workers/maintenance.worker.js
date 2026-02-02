@@ -10,7 +10,7 @@ export const cleanOldData = async (daysMetrics = 30, daysAlerts = 60) => {
         );
 
         const resAlerts = await pool.query(
-            "DELETE FROM avisos WHERE fecha < NOW() - (INTERVAL '30 day' * $1)", 
+            "DELETE FROM avisos WHERE fecha < NOW() - (INTERVAL '1 day' * $1)", 
             [daysAlerts]
         );
 

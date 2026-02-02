@@ -38,3 +38,16 @@ export const logError = (userId, action, ip, method, rute, details, statusCode) 
 export const logErrorShell = (userId, action, ip, method, rute,command, details, statusCode) => {
     newLog(userId, action, ip, method, rute, command, 'ERROR: ' + details, statusCode);
 }
+
+//obtencion de logs de errores
+export const getLogErrorService = async() =>{
+    const result = await pool.query(
+        `SELECT id, ip_origen, ruta, status_codigo, detalles, fecha_creado 
+        FROM logs
+        WHERE detalles LIKE 'ERROR:%' 
+        ORDER BY id DESC 
+        limit 100`
+    );
+    return result.rows;
+}
+
