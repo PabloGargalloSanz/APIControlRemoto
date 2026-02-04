@@ -33,11 +33,11 @@ Está compuesto por diferentes microservicios gestionados con Docker, separando 
 
 | Característica | Descripción |
 | :--- | :--- |
-| ** Dashboard** | Visualización gráfica del estado del hardware: Información de CPU, RAM, almacenamiento y tráfico de red. |
-| ** Terminal** | Terminal integrada en el navegador que permite ejecutar comandos directamente en el Host. |
-| ** Auditoría de la sesión** | Registro detallado (Logs) de todas las acciones, comandos ejecutados y errores del sistema. |
-| ** Alertas y Métricas** | Detección automática de valores críticos y almacenamiento de métricas para análisis histórico. |
-| ** Automatización** | Contenedores con políticas de reinicio automático y jobs en segundo plano para mantenimiento de BD. |
+| **Dashboard** | Visualización gráfica del estado del hardware: Información de CPU, RAM, almacenamiento y tráfico de red. |
+| **Terminal** | Terminal integrada en el navegador que permite ejecutar comandos directamente en el Host. |
+| **Auditoría de la sesión** | Registro detallado (Logs) de todas las acciones, comandos ejecutados y errores del sistema. |
+| **Alertas y Métricas** | Detección automática de valores críticos y almacenamiento de métricas para análisis histórico. |
+| **Automatización** | Contenedores con políticas de reinicio automático y jobs en segundo plano para mantenimiento de BD. |
 
 ---
 
@@ -191,6 +191,7 @@ El contedor remote_api se ejecuta con vólumenes y con **privileged: true**, por
 <p></p>
 
 <img width="1690" height="251" alt="image" src="https://github.com/user-attachments/assets/e8a24e65-92c8-4498-8eec-7d95b1726cd0" />
+
 
 
 
