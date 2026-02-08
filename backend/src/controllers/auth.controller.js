@@ -1,5 +1,7 @@
 import {createUser, authenticateUser} from '../services/auth.service.js';
 import {generateToken} from '../utils/token.util.js';
+import {recentFailures, bloquearIp} from '../services/securityIp.service.js';
+
 
 export const register = async (req, res, next) => {
     const { email, password, role } = req.body;   
@@ -22,8 +24,10 @@ export const register = async (req, res, next) => {
     }   
 };
 
+
 export const login = async (req, res, next) => {
     const { email, password } = req.body;
+    const ip = req.ip;
 
     try {
         const user = await authenticateUser(email, password);
@@ -41,6 +45,19 @@ export const login = async (req, res, next) => {
             });
 
         } else {
+            const ipCountSearch = await recentFailures(ip);
+            
+            //si iguala o supera los intentos fallidos a 5 bloqueo de ip
+            if(ipCountSearch >= 5){
+                const action = 'LOGIN_COUNT_FAIL_EXCEDED';
+                await bloquearIp(ip, action );
+
+                const err = new Error('Demasiados intentos. IP bloqueada.');
+                err.action = 'AUTH_IP_BLOCKED';
+                err.status = 429;
+                return next(err);
+            }
+
             const err = new Error('Credenciales erroneas');
             err.action = 'AUTH_LOGIN_FAIL';
             err.status = 401;
