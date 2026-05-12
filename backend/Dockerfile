@@ -1,6 +1,5 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
-# instalar dependencias systeminformation
 RUN apk add --no-cache \
     linux-headers \
     udev \
@@ -10,12 +9,12 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# copiamos dependencias e instalamos
-COPY package*.json ./
-RUN npm install
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
-# copiamos todo el coigo fuente
+COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm install --frozen-lockfile --prod
+
 COPY . .
 
-# comando por defecto 
 CMD ["node", "app.js"]
