@@ -2,7 +2,7 @@ CREATE DATABASE control_remoto;
 
 \c control_remoto
 
-DROP TABLE avisos, metricas_sistema, logs, usuarios CASCADE;
+DROP TABLE ips_bloqueadas, avisos, metricas_sistema, logs, usuarios CASCADE;
 DROP VIEW vista_logs, vista_metricas, vista_avisos;
 
 CREATE TABLE IF NOT EXISTS usuarios (
@@ -55,6 +55,17 @@ CREATE TABLE IF NOT EXISTS avisos(
     fecha_creado TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS ips_bloqueadas (
+    id SERIAL PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL UNIQUE,
+    razon TEXT,
+    fecha_bloqueo TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    fecha_desbloqueo TIMESTAMPTZ DEFAULT NULL,
+    bloqueo_permanente BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE INDEX IF NOT EXISTS idx_logs_ip_accion ON logs(ip_origen, accion, fecha_creado);
 
 -- vistas
 
